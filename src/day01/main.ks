@@ -1,6 +1,5 @@
 #!/usr/bin/env kast
-use std.prelude.*;
-use std.String;
+use (include "../common.ks").*;
 @syntax "add_assign" 15 wrap never = _ " " "+=" " " _;
 impl syntax (a += b) = `(
     $a = $a + $b
@@ -50,13 +49,7 @@ let parse_instruction = s -> Instruction => (
     )
 );
 let read_input = () -> Input => (
-    std.sys.argc () |> std.dbg.print;
-    let path = if std.sys.argc () >= 2 then (
-        std.sys.argv_at 1
-    ) else (
-        "example.txt"
-    );
-    let input = std.fs.read_file path;
+    let input = std.fs.read_file input_path;
     let result = list.create ();
     let line_idx = 0;
     String.lines (
@@ -80,14 +73,16 @@ let input = read_input ();
 let current_position = 50;
 let answer = 0;
 let rotate = (delta) => (
-    if delta > 0 then (
-        answer += (current_position + delta) / 100;
-    ) else (
-        let zero = 0;
-        let target = current_position + delta;
-        while zero >= target do (
-            if current_position != zero then answer += 1;
-            zero -= 100;
+    if part2 then (
+        if delta > 0 then (
+            answer += (current_position + delta) / 100;
+        ) else (
+            let zero = 0;
+            let target = current_position + delta;
+            while zero >= target do (
+                if current_position != zero then answer += 1;
+                zero -= 100;
+            );
         );
     );
     current_position += delta;
@@ -100,9 +95,11 @@ list.iter (
     instruction => (
         rotate <| instruction_delta instruction;
         # std.dbg.print current_position;
-        # if current_position == 0 then (
-        #     answer += 1;
-        # )
+        if part1 then (
+            if current_position == 0 then (
+                answer += 1;
+            );
+        );
     ),
 );
 std.dbg.print answer;
