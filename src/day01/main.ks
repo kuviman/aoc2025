@@ -50,8 +50,13 @@ let parse_instruction = s -> Instruction => (
     )
 );
 let read_input = () -> Input => (
-    let input = std.fs.read_file "input.txt";
-    # let input = std.fs.read_file "example.txt";
+    std.sys.argc () |> std.dbg.print;
+    let path = if std.sys.argc () >= 2 then (
+        std.sys.argv_at 1
+    ) else (
+        "example.txt"
+    );
+    let input = std.fs.read_file path;
     let result = list.create ();
     let line_idx = 0;
     String.lines (
