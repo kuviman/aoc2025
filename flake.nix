@@ -11,17 +11,18 @@
     inputs.flake-utils.lib.eachDefaultSystem (system:
       let
         overlays = [ ];
-        pkgs = import inputs.nixpkgs {
-          inherit system overlays;
-        };
-      in
-      with pkgs;
-      {
+        pkgs = import inputs.nixpkgs { inherit system overlays; };
+        kast = inputs.kast.packages.${system}.default;
+      in with pkgs; {
         devShells.default = mkShell {
           packages = [
-            inputs.kast.packages.${system}.default
+            (pkgs.writeShellScriptBin "kast" ''
+              systemd-run --user --scope -p MemoryMax=1G \
+                rlwrap ${kast}/bin/kast "$@"
+            '')
+            rlwrap
+            nixfmt-classic
           ];
         };
-      }
-    );
+      });
 }
