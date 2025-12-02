@@ -1,6 +1,5 @@
 module:
 use std.prelude.*;
-use std.String;
 let part1 = true;
 let input_path = "example.txt";
 (

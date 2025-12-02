@@ -1,19 +1,5 @@
 #!/usr/bin/env kast
 use (include "../common.ks").*;
-@syntax "add_assign" 15 wrap never = _ " " "+=" " " _;
-impl syntax (a += b) = `(
-    $a = $a + $b
-);
-@syntax "sub_assign" 15 wrap never = _ " " "-=" " " _;
-impl syntax (a -= b) = `(
-    $a = $a - $b
-);
-@syntax "while" 7.5 wrap never = "while" " " cond " " "do" " " body;
-impl syntax (while cond do body) = `(
-    loop (
-        if $cond then $body else break
-    )
-);
 std.sys.chdir (std.path.dirname __FILE__);
 const list = std.collections.treap;
 const Direction = type (
