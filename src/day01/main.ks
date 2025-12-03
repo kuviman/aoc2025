@@ -65,14 +65,20 @@ let rotate = (delta) => (
             let zero = 0;
             let target = current_position + delta;
             while zero >= target do (
-                if current_position != zero then answer += 1;
+                if current_position != zero then (
+                    answer += 1
+                );
                 zero -= 100;
             );
         );
     );
     current_position += delta;
-    while current_position < 0 do current_position += 100;
-    while current_position >= 100 do current_position -= 100;
+    while current_position < 0 do (
+        current_position += 100;
+    );
+    while current_position >= 100 do (
+        current_position -= 100;
+    );
     current_position
 );
 list.iter (
