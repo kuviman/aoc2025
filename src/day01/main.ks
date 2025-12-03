@@ -24,8 +24,7 @@ let parse_instruction = s -> Instruction => (
     ) else if direction_char == 'L' then (
         :Left
     ) else (
-        # TODO panic
-        _
+        panic "expected L or R"
     );
     let distance = String.substring (s, 1, String.length s - 1)
         |> string_to_int32;
