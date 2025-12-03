@@ -1,14 +1,5 @@
 #!/usr/bin/env kast
 use (include "../common.ks").*;
-@syntax "for_range" 7.5 wrap never = "for" " " pattern " " "in" " " start " " ".." " " end " " "do" " " body;
-impl syntax (for pattern in start .. end do body) = `(
-    let _loop_var = $start;
-    while _loop_var < $end do (
-        let $pattern = _loop_var;
-        $body;
-        _loop_var += 1;
-    )
-);
 const Set = (
     module:
     use std.collections.treap;
@@ -48,7 +39,7 @@ String.split (
             end |> int64_to_string |> String.length
         );
         let visited = Set.create ();
-        for times in 2 .. (max_times + 1) do (
+        for times in 2..(max_times + 1) do (
             let x = (
                 # let s = start |> int64_to_string;
                 # let i = (String.length s) / 2;
@@ -68,7 +59,7 @@ String.split (
             loop (
                 let x_s = int64_to_string x;
                 let combined_s = "";
-                for _ in 0 .. times do (
+                for _ in 0..times do (
                     combined_s += x_s;
                 );
                 let combined = combined_s |> string_to_int64;
