@@ -8,21 +8,6 @@ impl syntax (value as ty) = `(
     string_to_int64 (int32_to_string $value) :: $ty
 );
 
-@syntax "with_return" 60 wrap never = "with_return" " " body;
-impl syntax (with_return body) = `(
-    unwindable _returnable (
-        $body
-    )
-);
-@syntax "return_without_value" 60 wrap never = "return";
-@syntax "return_with_value" 60 wrap never = "return" " " value;
-impl syntax (return) = `(
-    unwind _returnable ()
-);
-impl syntax (return value) = `(
-    unwind _returnable $value
-);
-
 let k = if part1 then 2 else 12;
 
 const list = (
