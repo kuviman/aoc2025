@@ -43,8 +43,8 @@ let read_input = () -> Input => (
                 std.dbg.print line_idx;
                 line_idx += 1;
                 # std.dbg.print line;
-                result = list.push_back (
-                    result,
+                list.push_back (
+                    &result,
                     parse_instruction line,
                 );
             );
@@ -81,8 +81,8 @@ let rotate = (delta) => (
     current_position
 );
 list.iter (
-    input,
-    instruction => (
+    &input,
+    &instruction => (
         rotate <| instruction_delta instruction;
         # std.dbg.print current_position;
         if part1 then (

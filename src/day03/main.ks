@@ -32,8 +32,8 @@ String.lines (
             let current_end = 0;
             let positions_by_digit = list.create[queue.t[int32]] ();
             for _ in 0..10 do (
-                positions_by_digit = list.push_back (
-                    positions_by_digit,
+                list.push_back (
+                    &positions_by_digit,
                     queue.create (),
                 );
             );
@@ -42,16 +42,10 @@ String.lines (
                     let pos = current_start;
                     let digit = String.at (line, pos)
                         |> Char.to_digit;
-                    positions_by_digit = list.update (
-                        positions_by_digit,
-                        digit,
-                        positions => (
-                            let first, rest = queue.pop positions;
-                            if first != pos then (
-                                panic "bug";
-                            );
-                            rest
-                        ),
+                    let positions = list.at (&positions_by_digit, digit);
+                    let first = queue.pop positions;
+                    if first != pos then (
+                        panic "bug";
                     );
                     # dbg.print ("pop", digit, pos);
                     # queue.iter (list.at (positions_by_digit, digit), dbg.print[_]);
@@ -63,15 +57,10 @@ String.lines (
                     let pos = current_end;
                     let digit = String.at (line, pos)
                         |> Char.to_digit;
-                    positions_by_digit = list.update (
-                        positions_by_digit,
-                        digit,
-                        positions => (
-                            queue.push (
-                                positions,
-                                pos,
-                            )
-                        ),
+                    let positions = list.at (&positions_by_digit, digit);
+                    queue.push (
+                        positions,
+                        pos,
                     );
                     # dbg.print ("push", digit, pos);
                     # queue.iter (list.at (positions_by_digit, digit), dbg.print[_]);
@@ -81,10 +70,10 @@ String.lines (
             let max_in_range = () -> (.index :: int32, .value :: int32) => with_return (
                 let digit = 9;
                 while digit >= 0 do (
-                    let positions = list.at (positions_by_digit, digit);
+                    let positions = list.at (&positions_by_digit, digit);
                     if queue.length positions != 0 then (
                         return (
-                            .index = queue.front positions,
+                            .index = (queue.front positions)^,
                             .value = digit,
                         );
                     );

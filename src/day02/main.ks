@@ -12,8 +12,8 @@ const Set = (
     const contains = [T] (s :: set[T], x :: T) -> bool => (
         unwindable block (
             treap.iter (
-                s,
-                elem => (
+                &s,
+                &elem => (
                     if elem == x then unwind block true;
                 ),
             );
