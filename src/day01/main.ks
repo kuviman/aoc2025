@@ -1,7 +1,6 @@
 #!/usr/bin/env kast
 use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
-const list = std.collections.treap;
 const Direction = type (
     | :Left
     | :Right
@@ -18,7 +17,7 @@ let instruction_delta = (instruction :: Instruction) -> int32 => (
 );
 const Input = list.t[Instruction];
 let parse_instruction = s -> Instruction => (
-    let direction_char = String.get_at (s, 0);
+    let direction_char = String.at (s, 0);
     let direction :: Direction = if direction_char == 'R' then (
         :Right
     ) else if direction_char == 'L' then (
@@ -44,9 +43,9 @@ let read_input = () -> Input => (
                 std.dbg.print line_idx;
                 line_idx += 1;
                 # std.dbg.print line;
-                result = list.merge (
+                result = list.push_back (
                     result,
-                    list.singleton <| parse_instruction line,
+                    parse_instruction line,
                 );
             );
         )
