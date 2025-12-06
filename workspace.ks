@@ -4,4 +4,5 @@
     "src/day03/main.ks",
     "src/day04/main.ks",
     "src/day05/main.ks",
+    "src/day06/main.ks",
 )
