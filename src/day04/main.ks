@@ -62,7 +62,7 @@ while queue.length &q != 0 do (
     );
     if adj_papers < 4 then (
         if part2 then (
-            print ("removed at " + int32_to_string i + ", " + int32_to_string j);
+            print ("removed at " + to_string i + ", " + to_string j);
             (at (i, j))^ = '.';
             for ai in i - 1..i + 2 do (
                 for aj in j - 1..j + 2 do (

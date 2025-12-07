@@ -26,7 +26,7 @@ let parse_instruction = s -> Instruction => (
         panic "expected L or R"
     );
     let distance = String.substring (s, 1, String.length s - 1)
-        |> string_to_int32;
+        |> parse;
     (
         .direction,
         .distance,

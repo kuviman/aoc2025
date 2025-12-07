@@ -3,9 +3,9 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-@syntax "as" 62 wrap never = value " " "as" " " type;
-impl syntax (value as ty) = `(
-    string_to_int64 (int32_to_string $value) :: $ty
+@syntax "as_int64" 62 wrap never = value " " "as_int64";
+impl syntax (value as_int64) = `(
+    parse (to_string $value)
 );
 
 use std.collections.treap;
@@ -20,16 +20,19 @@ const segment_set = (
     );
     
     const split = (set :: t, x :: int64) -> (t, t) => (
-        treap.split(set, node => (
-            let start, end = node^.value;
-            if x <= start then (
-                :LeftSubtree
-            ) else if x >= end then (
-                :RightSubtree
-            ) else (
-                :Node ((start, x), (x, end))
+        treap.split (
+            set,
+            node => (
+                let start, end = node^.value;
+                if x <= start then (
+                    :LeftSubtree
+                ) else if x >= end then (
+                    :RightSubtree
+                ) else (
+                    :Node ((start, x), (x, end))
+                )
             )
-        ))
+        )
     );
     
     const add = (set :: t, (start, end) :: segment) -> t => (
@@ -56,7 +59,7 @@ const segment_set = (
     
     const total_length = (set :: &t) -> int64 => (
         match set^ with (
-            | :Empty => 0 as int64
+            | :Empty => 0 as_int64
             | :Node node => (
                 let start, end = node.value;
                 (end - start)
@@ -79,11 +82,11 @@ String.lines (
         ) else (
             if parsing_ranges then (
                 let start, end = String.split_once (line, '-');
-                let start = start |> string_to_int64;
-                let end = end |> string_to_int64;
-                ranges = segment_set.add (ranges, (start, end + 1 as int64));
+                let start = start |> parse;
+                let end = end |> parse;
+                ranges = segment_set.add (ranges, (start, end + 1 as_int64));
             ) else (
-                let id = string_to_int64 line;
+                let id = parse line;
                 list.push_back (&ids, id);
             );
         );

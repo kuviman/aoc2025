@@ -5,9 +5,9 @@ let input = std.fs.read_file input_path;
 
 use std.collections.queue;
 
-@syntax "as" 62 wrap never = value " " "as" " " type;
-impl syntax (value as ty) = `(
-    string_to_int64 (int32_to_string $value) :: $ty
+@syntax "as_int64" 62 wrap never = value " " "as_int64";
+impl syntax (value as_int64) = `(
+    parse (to_string $value)
 );
 
 let k = if part1 then 2 else 12;
@@ -15,7 +15,7 @@ let k = if part1 then 2 else 12;
 # let f = () => (
 # list |> map (x => if x < 0 then return :Error)
 # );
-let answer = 0 as int64;
+let answer = 0 as_int64;
 String.lines (
     input,
     line => with_return (
@@ -25,7 +25,7 @@ String.lines (
         dbg.print line;
         
         let start = 0;
-        let line_answer = 0 as int64;
+        let line_answer = 0 as_int64;
         
         let data = (
             let current_start = 0;
@@ -95,7 +95,7 @@ String.lines (
                 .value = next_digit,
             ) = data.max_in_range ();
             data.move_start_to (new_start + 1);
-            line_answer = line_answer * 10 as int64 + next_digit as int64;
+            line_answer = line_answer * 10 as_int64 + next_digit as_int64;
         );
         
         dbg.print line_answer;

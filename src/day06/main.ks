@@ -18,7 +18,7 @@ const Problem = type (
     .op :: Op,
 );
 
-let problems :: list.t[Problem] = list.create ();
+let problems = list.create ();
 
 if part1 then (
     String.lines (
