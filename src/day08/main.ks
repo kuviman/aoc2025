@@ -11,11 +11,18 @@ const Point = type (
     .z :: int64,
 );
 
+# ./main.ks 100 --part2 input.txt
+let max_points = if std.sys.argc () >= 4 then (
+    std.sys.argv_at 1 |> parse
+) else (
+    10000
+);
+
 let points :: list.t[Point] = list.create ();
 String.lines (
     input,
     line => (
-        if String.length line != 0 then (
+        if String.length line != 0 and list.length &points < max_points then (
             let coords = list.create ();
             String.split (
                 line,
