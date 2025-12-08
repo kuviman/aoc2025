@@ -7,7 +7,7 @@ const Set = (
     const t = set;
     const create = [T] () -> set[T] => treap.create ();
     const add = [T] (s :: set[T], x :: T) -> set[T] => (
-        treap.merge (s, treap.singleton x)
+        treap.join (s, treap.singleton x)
     );
     const contains = [T] (s :: set[T], x :: T) -> bool => (
         unwindable block (

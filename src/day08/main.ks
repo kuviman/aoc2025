@@ -81,9 +81,9 @@ const PairSet = (
                 )
             ),
         );
-        set^.inner = treap.merge (
+        set^.inner = treap.join (
             left,
-            treap.merge (
+            treap.join (
                 treap.singleton d,
                 right,
             ),
@@ -248,9 +248,9 @@ if part1 then (
                         )
                     ),
                 );
-                t = treap.merge (
+                t = treap.join (
                     left,
-                    treap.merge (
+                    treap.join (
                         treap.singleton x,
                         right,
                     ),

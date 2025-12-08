@@ -38,7 +38,7 @@ const segment_set = (
     const add = (set :: t, (start, end) :: segment) -> t => (
         let left, right = split (set, start);
         let middle, right = split (right, end);
-        treap.merge (left, treap.merge (treap.singleton (start, end), right))
+        treap.join (left, treap.join (treap.singleton (start, end), right))
     );
     
     const contains = (set :: &t, point :: int64) -> bool => (
