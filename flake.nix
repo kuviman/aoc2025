@@ -17,7 +17,7 @@
         devShells.default = mkShell {
           packages = [
             (pkgs.writeShellScriptBin "kast" ''
-              systemd-run --user --scope -p MemoryMax=1G \
+              systemd-run --user --scope -p MemoryMax=10G \
                 rlwrap ${kast}/bin/kast "$@"
             '')
             rlwrap
