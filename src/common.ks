@@ -18,5 +18,4 @@ let input_path = "example.txt";
         i = i + 1;
     );
 );
-let not = x => if x then false else true;
 let part2 = not part1;
