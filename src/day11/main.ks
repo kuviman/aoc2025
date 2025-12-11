@@ -5,6 +5,10 @@ let input = std.fs.read_file input_path;
 
 let verbose = false;
 
+let as_int64 :: int32 -> int64 = x => (x |> to_string |> parse);
+let zero = as_int64 0;
+let one = as_int64 1;
+
 const Map = (
     module:
     use std.collections.treap;
@@ -142,7 +146,16 @@ const Graph = (
     );
 );
 
+const Pt2Data = type (
+    # [visited_dac][visited_fft]
+    .false_false :: int64,
+    .false_true :: int64,
+    .true_false :: int64,
+    .true_true :: int64,
+);
+
 const VertexData = type (
+    .pt2 :: Pt2Data,
     .paths_to_target :: int32,
 );
 let g :: Graph.t[VertexData] = Graph.create ();
@@ -152,6 +165,12 @@ let get_or_init_vertex = (name :: string) => (
         name,
         () => (
             .paths_to_target = -1,
+            .pt2 = (
+                .false_false = -one,
+                .false_true = -one,
+                .true_false = -one,
+                .true_true = -one,
+            ),
         ),
     )
 );
@@ -182,25 +201,67 @@ if verbose then (
 let Part1 = (
     module:
     
-    let target = "out";
-    let solve = v => with_return (
-        if v^.id == target then return 1;
+    let dp = v => with_return (
+        if v^.id == "out" then return 1;
         let v_result = &v^.data.paths_to_target;
         if v_result^ == -1 then (
             v_result^ = 0;
             list.iter (
                 &v^.out,
                 &u => (
-                    v_result^ += solve u;
+                    v_result^ += dp u;
                 ),
             );
         );
         v_result^
     );
+    
+    let solve = () => dp <| Graph.get (&g, "you");
 );
 
-let solve_p1 = () => (
-    Part1.solve <| Graph.get (&g, "you")
+let Part2 = (
+    module:
+    
+    let dp = (v, visited_dac, visited_fft) => with_return (
+        if v^.id == "out" then (
+            if visited_dac and visited_fft then (
+                return one;
+            ) else (
+                return zero;
+            );
+        );
+        let data = &v^.data.pt2;
+        let v_result = if visited_dac then (
+            if visited_fft then (
+                &data^.true_true
+            ) else (
+                &data^.true_false
+            )
+        ) else (
+            if visited_fft then (
+                &data^.false_true
+            ) else (
+                &data^.false_false
+            )
+        );
+        if v_result^ == -one then (
+            v_result^ = zero;
+            let visited_dac = visited_dac or v^.id == "dac";
+            let visited_fft = visited_fft or v^.id == "fft";
+            list.iter (
+                &v^.out,
+                &u => (
+                    v_result^ += dp (u, visited_dac, visited_fft);
+                ),
+            );
+        );
+        v_result^
+    );
+    let solve = () => dp (Graph.get (&g, "svr"), false, false);
 );
 
-dbg.print <| solve_p1 ();
+if part1 then (
+    dbg.print <| Part1.solve ();
+) else (
+    dbg.print <| Part2.solve ();
+);
