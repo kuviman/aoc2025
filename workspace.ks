@@ -8,5 +8,6 @@
     # "src/day07/main.ks",
     # "src/day08/main.ks",
     # "src/day09/main.ks",
-    "src/day10/main.ks",
+    # "src/day10/main.ks",
+    "src/day11/main.ks",
 )
