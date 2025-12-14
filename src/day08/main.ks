@@ -225,8 +225,7 @@ PairSet.iter (
     ),
 );
 
-if part1 then (
-    
+let answer = if part1 then (
     let visited = list.create ();
     for i in 0..n do (
         list.push_back (&visited, false);
@@ -282,7 +281,16 @@ if part1 then (
         answer *= (list.at (&component_sizes, i))^;
     );
     
-    dbg.print answer;
+    as_int64 answer
 ) else (
-    dbg.print answer_part2;
+    answer_part2
+);
+
+dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = parse "40", .part2 = parse "25272"),
+    .part1 = parse "123420",
+    .part2 = parse "673096646",
 );

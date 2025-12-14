@@ -93,18 +93,26 @@ String.lines (
     ),
 );
 
-if part1 then (
-    let answer = 0;
+let answer = if part1 then (
+    let answer = 0 as_int64;
     list.iter (
         &ids,
         &id => (
             if segment_set.contains (&ranges, id) then (
-                answer += 1;
+                answer += 1 as_int64;
             );
         ),
     );
-    dbg.print answer;
+    answer
 ) else (
-    let answer = segment_set.total_length (&ranges);
-    dbg.print answer;
+    segment_set.total_length (&ranges)
+);
+
+dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = parse "3", .part2 = parse "14"),
+    .part1 = parse "664",
+    .part2 = parse "350780324308385",
 );

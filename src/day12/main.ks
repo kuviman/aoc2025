@@ -129,3 +129,10 @@ String.lines (
     ),
 );
 end_of_input ();
+
+assert_answers (
+    answer,
+    .example = (.part1 = -1, .part2 = -1),
+    .part1 = 495,
+    .part2 = -1,
+);

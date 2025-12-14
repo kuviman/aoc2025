@@ -55,7 +55,7 @@ const abs = [T] (x :: T) -> T => (
     )
 );
 
-if part1 then (
+let answer = if part1 then (
     let n = list.length &tiles;
     let answer = zero;
     for i in 0..n do (
@@ -68,7 +68,7 @@ if part1 then (
             );
         );
     );
-    dbg.print answer;
+    answer
 ) else (
     use std.collections.treap;
     let xs, ys = treap.create (), treap.create ();
@@ -338,5 +338,14 @@ if part1 then (
         try_direction 1;
         try_direction (0 - 1);
     );
-    dbg.print answer;
+    answer
+);
+
+dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = parse "50", .part2 = parse "24"),
+    .part1 = parse "4749672288",
+    .part2 = parse "1479665889",
 );

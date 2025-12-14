@@ -76,3 +76,10 @@ while queue.length &q != 0 do (
     );
 );
 dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = 13, .part2 = 43),
+    .part1 = 1457,
+    .part2 = 8310,
+);

@@ -93,3 +93,10 @@ list.iter (
     ),
 );
 std.dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = 3, .part2 = 6),
+    .part1 = 1086,
+    .part2 = 6268,
+);

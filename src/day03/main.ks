@@ -15,7 +15,7 @@ let k = if part1 then 2 else 12;
 # let f = () => (
 # list |> map (x => if x < 0 then return :Error)
 # );
-let answer = 0 as_int64;
+let answer :: int64 = 0 as_int64;
 String.lines (
     input,
     line => with_return (
@@ -103,3 +103,10 @@ String.lines (
     ),
 );
 dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = parse "357", .part2 = parse "3121910778619"),
+    .part1 = parse "17144",
+    .part2 = parse "170371185255900",
+);

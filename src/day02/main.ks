@@ -24,7 +24,7 @@ const Set = (
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 # TODO lang
-let answer = "0" |> parse;
+let answer :: int64 = "0" |> parse;
 String.split (
     input,
     ',',
@@ -40,7 +40,7 @@ String.split (
         );
         let visited = Set.create ();
         for times in 2..(max_times + 1) do (
-            let x = (
+            let x :: int32 = (
                 # let s = start |> to_string;
                 # let i = (String.length s) / 2;
                 # String.substring (s, i, String.length s - i)
@@ -75,3 +75,10 @@ String.split (
     ),
 );
 dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = parse "1227775554", .part2 = parse "4174379265"),
+    .part1 = parse "22062284697",
+    .part2 = parse "46666175279",
+);

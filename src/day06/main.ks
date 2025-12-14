@@ -126,3 +126,10 @@ list.iter (
     ),
 );
 dbg.print answer;
+
+assert_answers (
+    answer,
+    .example = (.part1 = parse "4277556", .part2 = parse "3263827"),
+    .part1 = parse "6299564383938",
+    .part2 = parse "11950004808442",
+);

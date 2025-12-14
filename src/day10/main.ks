@@ -434,3 +434,9 @@ String.lines (
 );
 dbg.print (.max_buttons, .max_joltages, .max_joltage, .max_combinations);
 dbg.print answer;
+assert_answers (
+    answer,
+    .example = (.part1 = 7, .part2 = 33),
+    .part1 = 527,
+    .part2 = 19810,
+);

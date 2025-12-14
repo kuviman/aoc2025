@@ -260,8 +260,15 @@ let Part2 = (
     let solve = () => dp (Graph.get (&g, "svr"), false, false);
 );
 
-if part1 then (
-    dbg.print <| Part1.solve ();
+let answer = if part1 then (
+    Part1.solve () |> as_int64
 ) else (
-    dbg.print <| Part2.solve ();
+    Part2.solve ()
+);
+dbg.print answer;
+assert_answers (
+    answer,
+    .example = (.part1 = parse "5", .part2 = parse "2"),
+    .part1 = parse "615",
+    .part2 = parse "303012373210128",
 );
