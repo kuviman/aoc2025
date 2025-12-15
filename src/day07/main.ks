@@ -3,47 +3,47 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-@syntax "as_int64" 62 wrap never = value " " "as_int64";
-impl syntax (value as_int64) = `(
+@syntax "as_Int64" 62 wrap never = value " " "as_Int64";
+impl syntax (value as_Int64) = `(
     parse (to_string $value)
 );
 
-let map = list.create ();
+let map = List.create ();
 
 String.lines (
     input,
     line => (
         if String.length line != 0 then (
-            list.push_back (&map, line);
+            List.push_back (&map, line);
         );
     ),
 );
-let first_line = list.at (&map, 0);
-let n = list.length &map;
-let m = String.length (list.at (&map, 0))^;
+let first_line = List.at (&map, 0);
+let n = List.length &map;
+let m = String.length (List.at (&map, 0))^;
 
-let answer :: int64 = unwindable block (
+let answer :: Int64 = unwindable block (
     if part1 then (
-        let answer = 0 as_int64;
-        let current_beams = list.create ();
+        let answer = 0 as_Int64;
+        let current_beams = List.create ();
         for i in 0..m do (
-            list.push_back (&current_beams, String.at (first_line^, i) == 'S');
+            List.push_back (&current_beams, String.at (first_line^, i) == 'S');
         );
         for i in 0..n - 1 do (
-            let next_beams = list.create ();
+            let next_beams = List.create ();
             for j in 0..m do (
-                list.push_back (&next_beams, false);
+                List.push_back (&next_beams, false);
             );
             for j in 0..m do (
-                if (list.at (&current_beams, j))^ then (
-                    let line_below = list.at (&map, i + 1);
+                if (List.at (&current_beams, j))^ then (
+                    let line_below = List.at (&map, i + 1);
                     let char_below = String.at (line_below^, j);
                     if char_below == '^' then (
-                        answer += 1 as_int64;
-                        (list.at (&next_beams, j - 1))^ = true;
-                        (list.at (&next_beams, j + 1))^ = true;
+                        answer += 1 as_Int64;
+                        (List.at (&next_beams, j - 1))^ = true;
+                        (List.at (&next_beams, j + 1))^ = true;
                     ) else (
-                        (list.at (&next_beams, j))^ = true;
+                        (List.at (&next_beams, j))^ = true;
                     );
                 );
             );
@@ -51,9 +51,9 @@ let answer :: int64 = unwindable block (
         );
         unwind block answer;
     ) else (
-        let next_row_answers = list.create ();
+        let next_row_answers = List.create ();
         for _ in 0..m do (
-            list.push_back (&next_row_answers, 0 as_int64);
+            List.push_back (&next_row_answers, 0 as_Int64);
         );
         
         @syntax "for_range_rev" 7.5 wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
@@ -68,34 +68,34 @@ let answer :: int64 = unwindable block (
         
         for i in (0 .. n - 1).rev() do (
             # dbg.print "inside loop";
-            let current_row_answers = list.create ();
+            let current_row_answers = List.create ();
             for j in 0..m do (
-                let current_cell_answer = 0 as_int64;
-                let line_below = list.at (&map, i + 1);
+                let current_cell_answer = 0 as_Int64;
+                let line_below = List.at (&map, i + 1);
                 let char_below = String.at (line_below^, j);
                 if char_below == '^' then (
                     current_cell_answer = (
-                        1 as_int64
-                        + (list.at (&next_row_answers, j - 1))^
-                        + (list.at (&next_row_answers, j + 1))^
+                        1 as_Int64
+                        + (List.at (&next_row_answers, j - 1))^
+                        + (List.at (&next_row_answers, j + 1))^
                     );
                 ) else (
-                    current_cell_answer = (list.at (&next_row_answers, j))^;
+                    current_cell_answer = (List.at (&next_row_answers, j))^;
                 );
                 # print ("at " + to_string i + ", " + to_string j + " = " + to_string current_cell_answer);
-                list.push_back (&current_row_answers, current_cell_answer);
+                List.push_back (&current_row_answers, current_cell_answer);
             );
             next_row_answers = current_row_answers;
         );
         
         for j in 0..m do (
             if String.at (first_line^, j) == 'S' then (
-                let answer :: int64 = (list.at (&next_row_answers, j))^ + 1 as_int64;
+                let answer :: Int64 = (List.at (&next_row_answers, j))^ + 1 as_Int64;
                 unwind block answer;
             );
         );
     );
-    -1 as_int64
+    -1 as_Int64
 );
 
 dbg.print answer;

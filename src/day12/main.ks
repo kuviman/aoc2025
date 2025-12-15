@@ -8,13 +8,13 @@ let max = (a, b) => if a > b then a else b;
 let min = (a, b) => if a < b then a else b;
 
 const Shape = type (
-    .rows :: list.t[string],
+    .rows :: List.t[String],
 );
 
-let shapes :: list.t[Shape] = list.create ();
+let shapes :: List.t[Shape] = List.create ();
 
 let print_shape = (shape :: &Shape) => (
-    list.iter (&shape^.rows, &s => print s);
+    List.iter (&shape^.rows, &s => print s);
 );
 
 let trivial = 0;
@@ -22,13 +22,13 @@ let actually_need_to_solve = 0;
 let max_extra_space_needed = 0;
 let min_optimal_free_area = 1000000000;
 let answer = 0;
-let solve = (.width :: int32, .height :: int32, .amounts :: list.t[int32]) => with_return (
-    let shape_tiles = list.create ();
-    list.iter (
+let solve = (.width :: Int32, .height :: Int32, .amounts :: List.t[Int32]) => with_return (
+    let shape_tiles = List.create ();
+    List.iter (
         &shapes,
         &shape => (
             let tiles = 0;
-            list.iter (
+            List.iter (
                 &shape.rows,
                 &s => String.iter (
                     s,
@@ -39,18 +39,18 @@ let solve = (.width :: int32, .height :: int32, .amounts :: list.t[int32]) => wi
                     ),
                 ),
             );
-            list.push_back (&shape_tiles, tiles);
+            List.push_back (&shape_tiles, tiles);
         ),
     );
     
     let dumb_area = 0;
     let optimal_area = 0;
     let i = 0;
-    list.iter (
+    List.iter (
         &amounts,
         &amount => (
             dumb_area += 3 * 3 * amount;
-            optimal_area += (list.at (&shape_tiles, i))^ * amount;
+            optimal_area += (List.at (&shape_tiles, i))^ * amount;
             i += 1;
         ),
     );
@@ -75,7 +75,7 @@ let solve = (.width :: int32, .height :: int32, .amounts :: list.t[int32]) => wi
         + "x"
         + to_string height
         + ": "
-        + std.collections.treap.to_string (&amounts.inner, &x => to_string x)
+        + std.collections.Treap.to_string (&amounts.inner, &x => to_string x)
     );
     print ("dumb area = " + to_string dumb_area);
     print ("optimal area = " + to_string optimal_area);
@@ -94,33 +94,33 @@ let end_of_input = () => (
     );
 );
 
-let new_shape = () -> Shape => (.rows = list.create ());
+let new_shape = () -> Shape => (.rows = List.create ());
 let current_shape :: Shape = new_shape ();
 String.lines (
     input,
     line => with_return (
         if String.length line == 0 then return;
         if String.index_of (':', line) == -1 then (
-            list.push_back (&current_shape.rows, line);
+            List.push_back (&current_shape.rows, line);
         ) else (
             let before_colon, after_colon = String.split_once (line, ':');
-            if list.length (&current_shape.rows) != 0 then (
+            if List.length (&current_shape.rows) != 0 then (
                 print "[INFO] read shape:";
                 print_shape (&current_shape);
-                list.push_back (&shapes, current_shape);
+                List.push_back (&shapes, current_shape);
                 current_shape = new_shape ();
             );
             if String.length after_colon != 0 then (
                 let width, height = String.split_once (before_colon, 'x');
                 let width = width |> parse;
                 let height = height |> parse;
-                let amounts = list.create ();
+                let amounts = List.create ();
                 String.split (
                     after_colon,
                     ' ',
                     part => with_return (
                         if String.length part == 0 then return;
-                        list.push_back (&amounts, part |> parse);
+                        List.push_back (&amounts, part |> parse);
                     ),
                 );
                 solve (.width, .height, .amounts);

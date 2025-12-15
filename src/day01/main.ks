@@ -7,15 +7,15 @@ const Direction = type (
 );
 const Instruction = type (
     .direction :: Direction,
-    .distance :: int32,
+    .distance :: Int32,
 );
-let instruction_delta = (instruction :: Instruction) -> int32 => (
+let instruction_delta = (instruction :: Instruction) -> Int32 => (
     match instruction.direction with (
-        | :Left => 0 - instruction.distance
+        | :Left => -instruction.distance
         | :Right => instruction.distance
     )
 );
-const Input = list.t[Instruction];
+const Input = List.t[Instruction];
 let parse_instruction = s -> Instruction => (
     let direction_char = String.at (s, 0);
     let direction :: Direction = if direction_char == 'R' then (
@@ -26,7 +26,7 @@ let parse_instruction = s -> Instruction => (
         panic "expected L or R"
     );
     let distance = String.substring (s, 1, String.length s - 1)
-        |> parse;
+        |> String.parse;
     (
         .direction,
         .distance,
@@ -34,7 +34,7 @@ let parse_instruction = s -> Instruction => (
 );
 let read_input = () -> Input => (
     let input = std.fs.read_file input_path;
-    let result = list.create ();
+    let result = List.create ();
     let line_idx = 0;
     String.lines (
         input,
@@ -43,7 +43,7 @@ let read_input = () -> Input => (
                 std.dbg.print line_idx;
                 line_idx += 1;
                 # std.dbg.print line;
-                list.push_back (
+                List.push_back (
                     &result,
                     parse_instruction line,
                 );
@@ -53,7 +53,7 @@ let read_input = () -> Input => (
     result
 );
 let input = read_input ();
-# list.iter (input, std.dbg.print[_])
+# List.iter (input, std.dbg.print[_])
 let current_position = 50;
 let answer = 0;
 let rotate = (delta) => (
@@ -80,7 +80,7 @@ let rotate = (delta) => (
     );
     current_position
 );
-list.iter (
+List.iter (
     &input,
     &instruction => (
         rotate <| instruction_delta instruction;

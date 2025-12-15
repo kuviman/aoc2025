@@ -3,7 +3,7 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-use std.collections.queue;
+use std.collections.Queue;
 
 @syntax "as_int64" 62 wrap never = value " " "as_int64";
 impl syntax (value as_int64) = `(
@@ -13,9 +13,9 @@ impl syntax (value as_int64) = `(
 let k = if part1 then 2 else 12;
 
 # let f = () => (
-# list |> map (x => if x < 0 then return :Error)
+# List |> map (x => if x < 0 then return :Error)
 # );
-let answer :: int64 = 0 as_int64;
+let answer :: Int64 = 0 as_int64;
 String.lines (
     input,
     line => with_return (
@@ -30,11 +30,11 @@ String.lines (
         let data = (
             let current_start = 0;
             let current_end = 0;
-            let positions_by_digit = list.create[queue.t[int32]] ();
+            let positions_by_digit = List.create[Queue.t[Int32]] ();
             for _ in 0..10 do (
-                list.push_back (
+                List.push_back (
                     &positions_by_digit,
-                    queue.create (),
+                    Queue.create (),
                 );
             );
             let move_start_to = i => (
@@ -42,13 +42,13 @@ String.lines (
                     let pos = current_start;
                     let digit = String.at (line, pos)
                         |> Char.to_digit;
-                    let positions = list.at (&positions_by_digit, digit);
-                    let first = queue.pop positions;
+                    let positions = List.at (&positions_by_digit, digit);
+                    let first = Queue.pop positions;
                     if first != pos then (
                         panic "bug";
                     );
                     # dbg.print ("pop", digit, pos);
-                    # queue.iter (list.at (positions_by_digit, digit), dbg.print[_]);
+                    # Queue.iter (List.at (positions_by_digit, digit), dbg.print[_]);
                     current_start += 1;
                 );
             );
@@ -57,23 +57,23 @@ String.lines (
                     let pos = current_end;
                     let digit = String.at (line, pos)
                         |> Char.to_digit;
-                    let positions = list.at (&positions_by_digit, digit);
-                    queue.push (
+                    let positions = List.at (&positions_by_digit, digit);
+                    Queue.push (
                         positions,
                         pos,
                     );
                     # dbg.print ("push", digit, pos);
-                    # queue.iter (list.at (positions_by_digit, digit), dbg.print[_]);
+                    # Queue.iter (List.at (positions_by_digit, digit), dbg.print[_]);
                     current_end += 1;
                 );
             );
-            let max_in_range = () -> (.index :: int32, .value :: int32) => with_return (
+            let max_in_range = () -> (.index :: Int32, .value :: Int32) => with_return (
                 let digit = 9;
                 while digit >= 0 do (
-                    let positions = list.at (&positions_by_digit, digit);
-                    if queue.length positions != 0 then (
+                    let positions = List.at (&positions_by_digit, digit);
+                    if Queue.length positions != 0 then (
                         return (
-                            .index = (queue.front positions)^,
+                            .index = (Queue.front positions)^,
                             .value = digit,
                         );
                     );

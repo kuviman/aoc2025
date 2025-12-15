@@ -3,31 +3,31 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-@syntax "as_int64" 62 wrap never = value " " "as_int64";
-impl syntax (value as_int64) = `(
+@syntax "as_Int64" 62 wrap never = value " " "as_Int64";
+impl syntax (value as_Int64) = `(
     parse (to_string $value)
 );
 
-use std.collections.treap;
+use std.collections.Treap;
 
 const segment_set = (
     module:
-    const segment = type (int64, int64);
-    const t = treap.t[segment];
+    const segment = type (Int64, Int64);
+    const t = Treap.t[segment];
     
     const create = () -> t => (
-        treap.create ()
+        Treap.create ()
     );
     
-    const split = (set :: t, x :: int64) -> (t, t) => (
-        treap.split (
+    const split = (set :: t, x :: Int64) -> (t, t) => (
+        Treap.split (
             set,
             node => (
                 let start, end = node^.value;
                 if x <= start then (
-                    :LeftSubtree
-                ) else if x >= end then (
                     :RightSubtree
+                ) else if x >= end then (
+                    :LeftSubtree
                 ) else (
                     :Node ((start, x), (x, end))
                 )
@@ -38,10 +38,10 @@ const segment_set = (
     const add = (set :: t, (start, end) :: segment) -> t => (
         let left, right = split (set, start);
         let middle, right = split (right, end);
-        treap.join (left, treap.join (treap.singleton (start, end), right))
+        Treap.join (left, Treap.join (Treap.singleton (start, end), right))
     );
     
-    const contains = (set :: &t, point :: int64) -> bool => (
+    const contains = (set :: &t, point :: Int64) -> Bool => (
         match set^ with (
             | :Empty => false
             | :Node node => (
@@ -57,9 +57,9 @@ const segment_set = (
         )
     );
     
-    const total_length = (set :: &t) -> int64 => (
+    const total_length = (set :: &t) -> Int64 => (
         match set^ with (
-            | :Empty => 0 as_int64
+            | :Empty => 0 as_Int64
             | :Node node => (
                 let start, end = node.value;
                 (end - start)
@@ -71,7 +71,7 @@ const segment_set = (
 );
 
 let ranges = segment_set.create ();
-let ids = list.create ();
+let ids = List.create ();
 
 let parsing_ranges = true;
 String.lines (
@@ -84,22 +84,22 @@ String.lines (
                 let start, end = String.split_once (line, '-');
                 let start = start |> parse;
                 let end = end |> parse;
-                ranges = segment_set.add (ranges, (start, end + 1 as_int64));
+                ranges = segment_set.add (ranges, (start, end + 1 as_Int64));
             ) else (
                 let id = parse line;
-                list.push_back (&ids, id);
+                List.push_back (&ids, id);
             );
         );
     ),
 );
 
 let answer = if part1 then (
-    let answer = 0 as_int64;
-    list.iter (
+    let answer = 0 as_Int64;
+    List.iter (
         &ids,
         &id => (
             if segment_set.contains (&ranges, id) then (
-                answer += 1 as_int64;
+                answer += 1 as_Int64;
             );
         ),
     );

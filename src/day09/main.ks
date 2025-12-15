@@ -11,14 +11,14 @@ if std.sys.argc () >= 4 and std.sys.argv_at 1 == "--svg" then (
     print "\" fill=\"black\" stroke=\"white\" stroke-width=\"100\"/></svg>";
 );
 
-let as_int64 :: int32 -> int64 = x => (x |> to_string |> parse);
+let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
 
 const Coords = type (
-    .x :: int64,
-    .y :: int64,
+    .x :: Int64,
+    .y :: Int64,
 );
 
-let tiles :: list.t[Coords] = list.create ();
+let tiles :: List.t[Coords] = List.create ();
 String.lines (
     input,
     line => (
@@ -27,23 +27,23 @@ String.lines (
             let x = x |> parse;
             let y = y |> parse;
             let coords :: Coords = (.x, .y);
-            list.push_back (&tiles, coords);
+            List.push_back (&tiles, coords);
         );
     ),
 );
 
 print "[INFO] coords read";
 
-# TODO make lang easier to use int64 literals
-let zero = as_int64 0;
-let one = as_int64 1;
+# TODO make lang easier to use Int64 literals
+let zero = as_Int64 0;
+let one = as_Int64 1;
 
 const Zero = [Self] type (
     .zero :: Self,
 );
 
-impl int32 as Zero = (.zero = 0);
-impl int64 as Zero = (.zero = as_int64 0);
+impl Int32 as Zero = (.zero = 0);
+impl Int64 as Zero = (.zero = as_Int64 0);
 
 const abs = [T] (x :: T) -> T => (
     let zero = (T as Zero).zero;
@@ -56,12 +56,12 @@ const abs = [T] (x :: T) -> T => (
 );
 
 let answer = if part1 then (
-    let n = list.length &tiles;
+    let n = List.length &tiles;
     let answer = zero;
     for i in 0..n do (
         for j in 0..i do (
-            let a = list.at (&tiles, i);
-            let b = list.at (&tiles, j);
+            let a = List.at (&tiles, i);
+            let b = List.at (&tiles, j);
             let area = (abs (b^.x - a^.x) + one) * (abs (b^.y - a^.y) + one);
             if area > answer then (
                 answer = area;
@@ -70,67 +70,67 @@ let answer = if part1 then (
     );
     answer
 ) else (
-    use std.collections.treap;
-    let xs, ys = treap.create (), treap.create ();
-    let idx_of = (t :: &treap.t[_], x :: int64) -> int32 => (
-        let less, _ = treap.split (
+    use std.collections.Treap;
+    let xs, ys = Treap.create (), Treap.create ();
+    let idx_of = (t :: &Treap.t[_], x :: Int64) -> Int32 => (
+        let less, _ = Treap.split (
             t^,
             data => (
                 if data^.value >= x then (
-                    :LeftSubtree
-                ) else (
                     :RightSubtree
+                ) else (
+                    :LeftSubtree
                 )
             ),
         );
-        treap.length &less
+        Treap.length &less
     );
     let uncompress_coord = (t, x) => (
-        (treap.at (t, x))^
+        (Treap.at (t, x))^
     );
     let uncompress = (.x, .y) => (
         .x = uncompress_coord (&xs, x),
         .y = uncompress_coord (&ys, y),
     );
-    let add = (t :: &treap.t[_], x :: int64) => (
-        let less, greater_or_equal = treap.split (
+    let add = (t :: &Treap.t[_], x :: Int64) => (
+        let less, greater_or_equal = Treap.split (
             t^,
             data => (
                 if data^.value >= x then (
-                    :LeftSubtree
-                ) else (
                     :RightSubtree
+                ) else (
+                    :LeftSubtree
                 )
             ),
         );
-        let _, greater = treap.split (
+        let _, greater = Treap.split (
             greater_or_equal,
             data => (
                 if data^.value >= x + one then (
-                    :LeftSubtree
-                ) else (
                     :RightSubtree
+                ) else (
+                    :LeftSubtree
                 )
             ),
         );
         # print "===";
-        # print <| treap.to_string (t, &x => to_string x);
+        # print <| Treap.to_string (t, &x => to_string x);
         # dbg.print x;
-        # print <| treap.to_string (&less, &x => to_string x);
-        # print <| treap.to_string (&greater, &x => to_string x);
-        t^ = treap.join (less, treap.join (treap.singleton x, greater));
-        # print <| treap.to_string (t, &x => to_string x);
+        # print <| Treap.to_string (&less, &x => to_string x);
+        # print <| Treap.to_string (&greater, &x => to_string x);
+        t^ = Treap.join (less, Treap.join (Treap.singleton x, greater));
+        # print <| Treap.to_string (t, &x => to_string x);
         # print "===";
     );
     let i = 0;
-    list.iter (
+    List.iter (
         &tiles,
         &(.x, .y) => (
             print (
                 "[INFO] compressing coords "
                 + (to_string i)
                 + "/"
-                + (to_string <| list.length &tiles)
+                + (to_string <| List.length &tiles)
             );
             add (&xs, x - one);
             add (&xs, x);
@@ -143,23 +143,23 @@ let answer = if part1 then (
     );
     print (
         "[INFO] coords are compressed xs="
-        + (to_string <| treap.length &xs)
+        + (to_string <| Treap.length &xs)
         + ", ys="
-        + (to_string <| treap.length &ys)
+        + (to_string <| Treap.length &ys)
     );
     
-    let vs = list.create ();
-    list.iter (
+    let vs = List.create ();
+    List.iter (
         &tiles,
         &(.x, .y) => (
             let x = idx_of (&xs, x);
             let y = idx_of (&ys, y);
-            list.push_back (&vs, (.x, .y));
+            List.push_back (&vs, (.x, .y));
         ),
     );
     if verbose then (
         print (
-            treap.to_string (
+            Treap.to_string (
                 &vs.inner,
                 &(.x, .y) => (
                     to_string x + " " + to_string y
@@ -171,14 +171,14 @@ let answer = if part1 then (
     
     const Map = (
         module:
-        use std.collections.treap;
+        use std.collections.Treap;
         const t = type (
-            .n :: int32,
-            .m :: int32,
-            .repr :: treap.t[treap.t[int32]],
+            .n :: Int32,
+            .m :: Int32,
+            .repr :: Treap.t[Treap.t[Int32]],
         );
         let create = (n, m) -> t => (
-            let repr = treap.create ();
+            let repr = Treap.create ();
             for i in 0..n do (
                 print (
                     "[INFO] progress "
@@ -186,42 +186,42 @@ let answer = if part1 then (
                     + "/"
                     + (to_string n)
                 );
-                let row = treap.create ();
+                let row = Treap.create ();
                 for i in 0..m do (
-                    row = treap.join (row, treap.singleton 0);
+                    row = Treap.join (row, Treap.singleton 0);
                 );
-                repr = treap.join (repr, treap.singleton row);
+                repr = Treap.join (repr, Treap.singleton row);
             );
             (.n, .m, .repr)
         );
-        let at_mut = (map :: &t, i, j) -> &int32 => (
-            treap.at (treap.at (&map^.repr, i), j)
+        let at_mut = (map :: &t, i, j) -> &Int32 => (
+            Treap.at (Treap.at (&map^.repr, i), j)
         );
         let at = (map, i, j) => (at_mut (map, i, j))^;
     );
     print "[INFO] creating empty map";
-    let map = Map.create (treap.length &xs, treap.length &ys);
+    let map = Map.create (Treap.length &xs, Treap.length &ys);
     print "[INFO] created empty map";
     
     print "[INFO] drawing edges";
-    for i in 0..list.length &vs do (
+    for i in 0..List.length &vs do (
         print (
             "[INFO] progress "
             + (to_string i)
             + "/"
-            + (to_string <| list.length &vs)
+            + (to_string <| List.length &vs)
         );
         let next = i + 1;
-        if next == list.length &vs then (
+        if next == List.length &vs then (
             next = 0;
         );
         let next_next = next + 1;
-        if next_next == list.length &vs then (
+        if next_next == List.length &vs then (
             next_next = 0;
         );
-        let a = (list.at (&vs, i))^;
-        let b = (list.at (&vs, next))^;
-        let c = (list.at (&vs, next_next))^;
+        let a = (List.at (&vs, i))^;
+        let b = (List.at (&vs, next))^;
+        let c = (List.at (&vs, next_next))^;
         if a.y == b.y then (
             let add = 1;
             let y = a.y;
@@ -259,7 +259,7 @@ let answer = if part1 then (
         );
     );
     const ACTUAL_CORNER = 100;
-    list.iter (
+    List.iter (
         &vs,
         &(.x, .y) => (
             (Map.at_mut (&map, x, y))^ = ACTUAL_CORNER;
@@ -280,14 +280,14 @@ let answer = if part1 then (
         );
     );
     
-    let answer = as_int64 0;
-    for i in 0..list.length &vs do (
+    let answer = as_Int64 0;
+    for i in 0..List.length &vs do (
         let next = i + 1;
-        if next == list.length &vs then (
+        if next == List.length &vs then (
             next = 0;
         );
-        let a = (list.at (&vs, i))^;
-        let b = (list.at (&vs, next))^;
+        let a = (List.at (&vs, i))^;
+        let b = (List.at (&vs, next))^;
         if a.y != b.y then continue;
         if input_path == "input.txt" and abs (a.x - b.x) < 100 then continue;
         if a.x > b.x then (

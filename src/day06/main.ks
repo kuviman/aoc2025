@@ -3,7 +3,7 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-let int32_as_int64 = value => (
+let int32_as_Int64 = value => (
     value |> to_string |> parse
 );
 
@@ -14,11 +14,11 @@ const Op = type (
 );
 
 const Problem = type (
-    .numbers :: list.t[int64],
+    .numbers :: List.t[Int64],
     .op :: Op,
 );
 
-let problems = list.create ();
+let problems = List.create ();
 
 if part1 then (
     String.lines (
@@ -30,22 +30,22 @@ if part1 then (
                 ' ',
                 part => with_return (
                     if String.length part == 0 then return;
-                    if idx >= list.length &problems then (
-                        list.push_back (
+                    if idx >= List.length &problems then (
+                        List.push_back (
                             &problems,
                             (
-                                .numbers = list.create (),
+                                .numbers = List.create (),
                                 .op = :Unknown,
                             ),
                         );
                     );
-                    let problem = list.at (&problems, idx);
+                    let problem = List.at (&problems, idx);
                     if part == "+" then (
                         problem^.op = :Add;
                     ) else if part == "*" then (
                         problem^.op = :Multiply;
                     ) else (
-                        list.push_back (&problem^.numbers, parse part);
+                        List.push_back (&problem^.numbers, parse part);
                     );
                     idx += 1;
                 ),
@@ -53,22 +53,22 @@ if part1 then (
         ),
     );
 ) else (
-    let lines = list.create ();
+    let lines = List.create ();
     String.lines (
         input,
         line => (
             if String.length line != 0 then (
-                list.push_back (&lines, line);
+                List.push_back (&lines, line);
             );
         ),
     );
-    let line_length = String.length (list.at (&lines, 0))^;
+    let line_length = String.length (List.at (&lines, 0))^;
     let start_column = 0;
     while start_column < line_length do (
         let end_column = start_column;
         while end_column < line_length do (
             let full_of_spaces = true;
-            list.iter (
+            List.iter (
                 &lines,
                 &line => (
                     if String.at (line, end_column) != ' ' then (
@@ -79,11 +79,11 @@ if part1 then (
             if full_of_spaces then break;
             end_column += 1;
         );
-        let numbers = list.create ();
+        let numbers = List.create ();
         let op :: Op = :Unknown;
         for column in start_column..end_column do (
             let number = 0;
-            list.iter (
+            List.iter (
                 &lines,
                 &line => (
                     let c = String.at (line, column);
@@ -96,20 +96,20 @@ if part1 then (
                     );
                 ),
             );
-            list.push_back (&numbers, int32_as_int64 number);
+            List.push_back (&numbers, int32_as_Int64 number);
         );
-        list.push_back (&problems, (.numbers, .op));
+        List.push_back (&problems, (.numbers, .op));
         start_column = end_column + 1;
     );
 );
 
-let calculate_problem = (problem :: &Problem) -> int64 => (
+let calculate_problem = (problem :: &Problem) -> Int64 => (
     let start, combine = match problem^.op with (
-        | :Add => (int32_as_int64 0, std.op.add[int64])
-        | :Multiply => (int32_as_int64 1, std.op.mul[int64])
+        | :Add => (int32_as_Int64 0, std.op.add[Int64])
+        | :Multiply => (int32_as_Int64 1, std.op.mul[Int64])
     );
     let result = start;
-    list.iter (
+    List.iter (
         &problem^.numbers,
         &number => (
             result = combine (result, number);
@@ -118,8 +118,8 @@ let calculate_problem = (problem :: &Problem) -> int64 => (
     result
 );
 
-let answer = 0 |> int32_as_int64;
-list.iter (
+let answer = 0 |> int32_as_Int64;
+List.iter (
     &problems,
     problem => (
         answer += calculate_problem problem;

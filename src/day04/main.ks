@@ -3,47 +3,47 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-use std.collections.queue;
+use std.collections.Queue;
 
-let map = list.create ();
+let map = List.create ();
 String.lines (
     input,
     line => (
         if String.length line != 0 then (
-            let chars = list.create ();
+            let chars = List.create ();
             String.iter (
                 line,
                 c => (
-                    list.push_back (&chars, c);
+                    List.push_back (&chars, c);
                 )
             );
-            list.push_back (&map, chars);
+            List.push_back (&map, chars);
         );
     )
 );
 
-let at = (i, j) -> &char => (
-    list.at (list.at (&map, i), j)
+let at = (i, j) -> &Char => (
+    List.at (List.at (&map, i), j)
 );
 
-let n = list.length &map;
-let m = list.length (list.at (&map, 0));
+let n = List.length &map;
+let m = List.length (List.at (&map, 0));
 
 let in_bounds = (i, j) => (
     (0 <= i and i < n)
     and (0 <= j and j < m)
 );
 
-let q = queue.create ();
+let q = Queue.create ();
 for i in 0..n do (
     for j in 0..m do (
-        queue.push (&q, (i, j));
+        Queue.push (&q, (i, j));
     );
 );
 
 let answer = 0;
-while queue.length &q != 0 do (
-    let i, j = queue.pop &q;
+while Queue.length &q != 0 do (
+    let i, j = Queue.pop &q;
     if (at (i, j))^ != '@' then (
         continue;
     );
@@ -67,7 +67,7 @@ while queue.length &q != 0 do (
             for ai in i - 1..i + 2 do (
                 for aj in j - 1..j + 2 do (
                     if in_bounds (ai, aj) then (
-                        queue.push (&q, (ai, aj));
+                        Queue.push (&q, (ai, aj));
                     );
                 );
             );

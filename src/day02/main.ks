@@ -2,16 +2,16 @@
 use (include "../common.ks").*;
 const Set = (
     module:
-    use std.collections.treap;
-    const set = [T] treap.t[T];
+    use std.collections.Treap;
+    const set = [T] Treap.t[T];
     const t = set;
-    const create = [T] () -> set[T] => treap.create ();
+    const create = [T] () -> set[T] => Treap.create ();
     const add = [T] (s :: set[T], x :: T) -> set[T] => (
-        treap.join (s, treap.singleton x)
+        Treap.join (s, Treap.singleton x)
     );
-    const contains = [T] (s :: set[T], x :: T) -> bool => (
+    const contains = [T] (s :: set[T], x :: T) -> Bool => (
         unwindable block (
-            treap.iter (
+            Treap.iter (
                 &s,
                 &elem => (
                     if elem == x then unwind block true;
@@ -24,7 +24,7 @@ const Set = (
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 # TODO lang
-let answer :: int64 = "0" |> parse;
+let answer :: Int64 = "0" |> parse;
 String.split (
     input,
     ',',
@@ -40,7 +40,7 @@ String.split (
         );
         let visited = Set.create ();
         for times in 2..(max_times + 1) do (
-            let x :: int32 = (
+            let x :: Int32 = (
                 # let s = start |> to_string;
                 # let i = (String.length s) / 2;
                 # String.substring (s, i, String.length s - i)

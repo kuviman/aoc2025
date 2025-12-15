@@ -3,12 +3,12 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-let as_int64 :: int32 -> int64 = x => (x |> to_string |> parse);
+let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
 
 const Point = type (
-    .x :: int64,
-    .y :: int64,
-    .z :: int64,
+    .x :: Int64,
+    .y :: Int64,
+    .z :: Int64,
 );
 
 # ./main.ks 100 --part2 input.txt
@@ -18,25 +18,25 @@ let max_points = if std.sys.argc () >= 4 then (
     10000
 );
 
-let points :: list.t[Point] = list.create ();
+let points :: List.t[Point] = List.create ();
 String.lines (
     input,
     line => (
-        if String.length line != 0 and list.length &points < max_points then (
-            let coords = list.create ();
+        if String.length line != 0 and List.length &points < max_points then (
+            let coords = List.create ();
             String.split (
                 line,
                 ',',
                 part => (
-                    list.push_back (&coords, part |> parse);
+                    List.push_back (&coords, part |> parse);
                 )
             );
             let point = (
-                .x = (list.at (&coords, 0))^,
-                .y = (list.at (&coords, 1))^,
-                .z = (list.at (&coords, 2))^,
+                .x = (List.at (&coords, 0))^,
+                .y = (List.at (&coords, 1))^,
+                .z = (List.at (&coords, 2))^,
             );
-            list.push_back (
+            List.push_back (
                 &points,
                 point,
             );
@@ -46,10 +46,10 @@ String.lines (
 
 print "[INFO] Input read";
 
-# list.iter (&points, &point => dbg.print point);
+# List.iter (&points, &point => dbg.print point);
 let pairs_to_connect = if input_path == "example.txt" then 10 else 1000;
 
-let n = list.length &points;
+let n = List.length &points;
 let sqr = x => x * x;
 let sqr_distance = (&a, &b) => (
     sqr (a.x - b.x) + sqr (a.y - b.y) + sqr (a.z - b.z)
@@ -57,48 +57,48 @@ let sqr_distance = (&a, &b) => (
 
 const PairSet = (
     module:
-    use std.collections.treap;
+    use std.collections.Treap;
     
-    const data = type (int32, int32, .sqr_d :: int64);
-    const t = type (.inner :: treap.t[data]);
+    const data = type (Int32, Int32, .sqr_d :: Int64);
+    const t = type (.inner :: Treap.t[data]);
     
     const create = () -> t => (
-        .inner = treap.create (),
+        .inner = Treap.create (),
     );
     
-    const length = (set :: &t) -> int32 => (
-        treap.length &set^.inner
+    const length = (set :: &t) -> Int32 => (
+        Treap.length &set^.inner
     );
     
     const add = (set :: &t, d :: data) => (
-        let left, right = treap.split (
+        let left, right = Treap.split (
             set^.inner,
             node => (
                 if d.sqr_d < node^.value.sqr_d then (
-                    :LeftSubtree
-                ) else (
                     :RightSubtree
+                ) else (
+                    :LeftSubtree
                 )
             ),
         );
-        set^.inner = treap.join (
+        set^.inner = Treap.join (
             left,
-            treap.join (
-                treap.singleton d,
+            Treap.join (
+                Treap.singleton d,
                 right,
             ),
         );
     );
     
-    const keep_minimum = (set :: &t, n :: int32) => (
+    const keep_minimum = (set :: &t, n :: Int32) => (
         if length set > n then (
-            let left, _right = treap.split_at (set^.inner, n);
+            let left, _right = Treap.split_at (set^.inner, n);
             set^.inner = left;
         );
     );
     
     const iter = (set :: &t, f) => (
-        treap.iter (&set^.inner, f);
+        Treap.iter (&set^.inner, f);
     );
 );
 let pairs = PairSet.create ();
@@ -113,8 +113,8 @@ for i in 0..n do (
         + (to_string <| PairSet.length &pairs)
     );
     for j in 0..i do (
-        let p_i = list.at (&points, i);
-        let p_j = list.at (&points, j);
+        let p_i = List.at (&points, i);
+        let p_j = List.at (&points, j);
         let sqr_d = sqr_distance (p_i, p_j);
         # dbg.print (p_i^, p_j^, .sqr_d, .pairs_to_connect);
         PairSet.add (&pairs, (i, j, .sqr_d));
@@ -128,8 +128,8 @@ const DSU = (
     module:
     
     const root = type (
-        .id :: int32,
-        .count :: int32,
+        .id :: Int32,
+        .count :: Int32,
     );
     const node = type (
         | :Root (
@@ -169,7 +169,7 @@ const DSU = (
         )
     );
     
-    const merge = (a :: &node, b :: &node) -> bool => (
+    const merge = (a :: &node, b :: &node) -> Bool => (
         let a = find_root_node a;
         let b = find_root_node b;
         let root_a = find_root a;
@@ -192,24 +192,24 @@ const DSU = (
         )
     );
     
-    const is_same = (a :: &node, b :: &node) -> bool => (
+    const is_same = (a :: &node, b :: &node) -> Bool => (
         let root_a = find_root a;
         let root_b = find_root b;
         root_a^.id == root_b^.id
     );
 );
 
-let nodes = list.create ();
+let nodes = List.create ();
 for i in 0..n do (
-    list.push_back (&nodes, DSU.new_node ())
+    List.push_back (&nodes, DSU.new_node ())
 );
 
-let answer_part2 = 0 |> as_int64;
+let answer_part2 = 0 |> as_Int64;
 PairSet.iter (
     &pairs,
     &(i, j, .sqr_d) => (
-        let a = list.at (&points, i);
-        let b = list.at (&points, j);
+        let a = List.at (&points, i);
+        let b = List.at (&points, j);
         # dbg.print ("merge", a^, b^);
         # print (
         #     "[INFO] merge "
@@ -219,38 +219,38 @@ PairSet.iter (
         #     + " with sqr_d="
         #     + (to_string sqr_d)
         # );
-        if DSU.merge (list.at (&nodes, i), list.at (&nodes, j)) then (
+        if DSU.merge (List.at (&nodes, i), List.at (&nodes, j)) then (
             answer_part2 = a^.x * b^.x;
         );
     ),
 );
 
 let answer = if part1 then (
-    let visited = list.create ();
+    let visited = List.create ();
     for i in 0..n do (
-        list.push_back (&visited, false);
+        List.push_back (&visited, false);
     );
     
-    const sort_by = [T] (a :: &list.t[T], .less :: (&T, &T) -> bool) => (
-        use std.collections.treap;
-        let t = treap.create ();
-        list.iter (
+    const sort_by = [T] (a :: &List.t[T], .less :: (&T, &T) -> Bool) => (
+        use std.collections.Treap;
+        let t = Treap.create ();
+        List.iter (
             a,
             &x => (
-                let left, right = treap.split (
+                let left, right = Treap.split (
                     t,
                     node => (
                         if less (&x, &node^.value) then (
-                            :LeftSubtree
-                        ) else (
                             :RightSubtree
+                        ) else (
+                            :LeftSubtree
                         )
                     ),
                 );
-                t = treap.join (
+                t = Treap.join (
                     left,
-                    treap.join (
-                        treap.singleton x,
+                    Treap.join (
+                        Treap.singleton x,
                         right,
                     ),
                 );
@@ -259,17 +259,17 @@ let answer = if part1 then (
         a^.inner = t;
     );
     
-    let component_sizes = list.create ();
-    list.iter (
+    let component_sizes = List.create ();
+    List.iter (
         &nodes,
         node => (
             let root = DSU.find_root node;
             # dbg.print root^;
-            # dbg.print <| (list.length &visited, root^.id - 1);
-            let visited = list.at (&visited, root^.id - 1);
+            # dbg.print <| (List.length &visited, root^.id - 1);
+            let visited = List.at (&visited, root^.id - 1);
             if not visited^ then (
                 visited^ = true;
-                list.push_back (&component_sizes, root^.count);
+                List.push_back (&component_sizes, root^.count);
                 # dbg.print root^.count;
             );
         ),
@@ -278,10 +278,10 @@ let answer = if part1 then (
     
     let answer = 1;
     for i in 0..3 do (
-        answer *= (list.at (&component_sizes, i))^;
+        answer *= (List.at (&component_sizes, i))^;
     );
     
-    as_int64 answer
+    as_Int64 answer
 ) else (
     answer_part2
 );

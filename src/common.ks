@@ -50,3 +50,5 @@ let assert_answers = (
         std.sys.exit (-1);
     );
 );
+
+use String.parse;

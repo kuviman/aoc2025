@@ -3,7 +3,7 @@ use std.prelude.*;
 
 std.sys.chdir (std.path.dirname __FILE__);
 let only = if std.sys.argc () >= 2 then (
-    :Some (std.sys.argv_at 1 |> parse)
+    :Some (std.sys.argv_at 1 |> String.parse)
 ) else (
     :None
 );
@@ -25,7 +25,7 @@ for day in 1..13 do (
         if day == 12 then (
             if not (part == 1 and file == "input.txt") then return;
         );
-        if part == 2 and file == "example.txt" then (
+        if day == 11 and part == 2 and file == "example.txt" then (
             file = "example.part2.txt";
         );
         let command = path + " --part" + to_string part + " " + file;

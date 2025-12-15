@@ -15,18 +15,18 @@ impl syntax (for i in (start .. end).rev() do body) = `(
 
 let verbose = false;
 
-const State = int32;
+const State = Int32;
 const Machine = type (
-    .lights :: int32,
+    .lights :: Int32,
     .target_state :: State,
-    .buttons :: list.t[State],
-    .joltages :: list.t[int32],
+    .buttons :: List.t[State],
+    .joltages :: List.t[Int32],
 );
 let parse_machine = s -> Machine => (
     let lights = 0;
     let target_state = 0;
-    let buttons = list.create ();
-    let joltages = list.create ();
+    let buttons = List.create ();
+    let joltages = List.create ();
     String.split (
         s,
         ' ',
@@ -48,19 +48,19 @@ let parse_machine = s -> Machine => (
                     inside,
                     ',',
                     idx => (
-                        let idx :: int32 = idx |> parse;
+                        let idx :: Int32 = idx |> parse;
                         affected_lights = std.op.bit_or (
                             affected_lights,
                             std.op.bit_shift_left (1, idx),
                         );
                     ),
                 );
-                list.push_back (&buttons, affected_lights);
+                List.push_back (&buttons, affected_lights);
             ) else if parens == '{' then (
                 String.split (
                     inside,
                     ',',
-                    x => list.push_back (&joltages, x |> parse),
+                    x => List.push_back (&joltages, x |> parse),
                 );
             ) else (
                 panic "unexpected char"
@@ -75,33 +75,33 @@ let max = (a, b) => if a > b then a else b;
 let min = (a, b) => if a < b then a else b;
 
 let solve_part1 = (machine :: Machine) => (
-    use std.collections.queue;
-    let q = queue.create ();
-    let d = list.create ();
+    use std.collections.Queue;
+    let q = Queue.create ();
+    let d = List.create ();
     for _ in 0..std.op.bit_shift_left (1, machine.lights) do (
-        list.push_back (&d, 0);
+        List.push_back (&d, 0);
     );
     
     print "[INFO] starting bfs";
-    (list.at (&d, 0))^ = 1;
-    queue.push (&q, 0);
-    (list.at (&d, machine.target_state))^ = -1;
-    queue.push (&q, machine.target_state);
+    (List.at (&d, 0))^ = 1;
+    Queue.push (&q, 0);
+    (List.at (&d, machine.target_state))^ = -1;
+    Queue.push (&q, machine.target_state);
     let machine_answer = -1;
-    while queue.length &q != 0 do (
-        let state = queue.pop &q;
+    while Queue.length &q != 0 do (
+        let state = Queue.pop &q;
         # if state == machine.target_state then break;
         # dbg.print state;
-        let state_d = (list.at (&d, state))^;
+        let state_d = (List.at (&d, state))^;
         let dir = if state_d < 0 then -1 else +1;
-        list.iter (
+        List.iter (
             &machine.buttons,
             &changes => (
                 let new_state = std.op.bit_xor (state, changes);
-                let new_state_d = list.at (&d, new_state);
+                let new_state_d = List.at (&d, new_state);
                 if new_state_d^ == 0 then (
                     new_state_d^ = state_d + dir;
-                    queue.push (&q, new_state);
+                    Queue.push (&q, new_state);
                 ) else if (new_state_d^ < 0) != (state_d < 0) then (
                     machine_answer = abs (state_d) + abs (new_state_d^) - 1;
                     break;
@@ -117,35 +117,35 @@ let solve_part1 = (machine :: Machine) => (
 
 const Matrix = (
     module:
-    const t = type (.rows :: list.t[list.t[int32]]);
+    const t = type (.rows :: List.t[List.t[Int32]]);
     
     const create = (n, m) -> t => (
-        let rows = list.create ();
+        let rows = List.create ();
         for _ in 0..n do (
-            let row = list.create ();
+            let row = List.create ();
             for _ in 0..m do (
-                list.push_back (&row, 0);
+                List.push_back (&row, 0);
             );
-            list.push_back (&rows, row);
+            List.push_back (&rows, row);
         );
         (.rows)
     );
     
-    const at_mut = (a :: &t, i :: int32, j :: int32) -> &int32 => (
-        list.at (list.at (&a^.rows, i), j)
+    const at_mut = (a :: &t, i :: Int32, j :: Int32) -> &Int32 => (
+        List.at (List.at (&a^.rows, i), j)
     );
     const at = (a :: &t, i, j) => (at_mut (a, i, j))^;
     
     const row = (a :: &t, i) => (
-        list.at (&a^.rows, i)
+        List.at (&a^.rows, i)
     );
     
     const print = (a :: &t) => (
-        list.iter (
+        List.iter (
             &a^.rows,
             row => (
                 let s = "";
-                list.iter (
+                List.iter (
                     row,
                     &x => (
                         s += " " + to_string x;
@@ -156,9 +156,9 @@ const Matrix = (
         );
     );
     
-    const size = (a :: &t) -> (int32, int32) => (
-        list.length &a^.rows,
-        list.length (list.at (&a^.rows, 0))
+    const size = (a :: &t) -> (Int32, Int32) => (
+        List.length &a^.rows,
+        List.length (List.at (&a^.rows, 0))
     );
 );
 
@@ -166,7 +166,7 @@ let swap = [T] (a :: &T, b :: &T) => (
     a^, b^ = b^, a^;
 );
 
-# const gcd = (a :: int32, b :: int32) -> (int32, .ma :: int32, .mb :: int32) => (
+# const gcd = (a :: Int32, b :: Int32) -> (Int32, .ma :: Int32, .mb :: Int32) => (
 #     if a == 0 then (
 #         (b, .ma = 0, .mb = 1)
 #     ) else if b == 0 then (
@@ -208,8 +208,8 @@ let gauss_elimination = (a :: &Matrix.t) => (
     );
     let n, m = Matrix.size a;
     let i, j = 0, 0;
-    let free = list.create ();
-    let pivot = list.create ();
+    let free = List.create ();
+    let pivot = List.create ();
     
     loop (
         if i >= n or j >= m then break;
@@ -221,28 +221,28 @@ let gauss_elimination = (a :: &Matrix.t) => (
         );
         if non_zero_row == -1 then (
             if j + 1 < m then (
-                list.push_back (&free, j);
+                List.push_back (&free, j);
             );
             j += 1;
             continue;
         );
         if j + 1 < m then (
-            list.push_back (&pivot, (.row = i, .var = j));
+            List.push_back (&pivot, (.row = i, .var = j));
         );
         let row = Matrix.row (a, i);
         swap (row, Matrix.row (a, non_zero_row));
-        let at_row = (list.at (row, j))^;
+        let at_row = (List.at (row, j))^;
         for lower in i + 1..n do (
             let lower = Matrix.row (a, lower);
-            if (list.at (lower, j))^ % at_row != 0 then (
+            if (List.at (lower, j))^ % at_row != 0 then (
                 # we can't safely divide, so we scale
                 # the whole row up to compensate
-                list.iter (lower, x => (x^ *= at_row));
+                List.iter (lower, x => (x^ *= at_row));
             );
-            let mult = (list.at (lower, j))^ / at_row;
+            let mult = (List.at (lower, j))^ / at_row;
             for k in j..m do (
-                let at_row = (list.at (row, k))^;
-                let at_lower = (list.at (lower, k));
+                let at_row = (List.at (row, k))^;
+                let at_lower = (List.at (lower, k));
                 at_lower^ -= at_row * mult;
             );
         );
@@ -250,7 +250,7 @@ let gauss_elimination = (a :: &Matrix.t) => (
         j += 1;
     );
     for j in j..m - 1 do (
-        list.push_back (&free, j);
+        List.push_back (&free, j);
     );
     if verbose then (
         print "[INFO] after gauss";
@@ -258,7 +258,7 @@ let gauss_elimination = (a :: &Matrix.t) => (
         print "====";
     );
     
-    print ("free vars = " + std.collections.treap.to_string (&free.inner, &x => to_string x));
+    print ("free vars = " + std.collections.Treap.to_string (&free.inner, &x => to_string x));
     
     (.free, .pivot)
 );
@@ -271,9 +271,9 @@ let pow = (x, n) => (
     result
 );
 
-const treap = (
+const Treap = (
     module:
-    const iter_rev = [T] (a :: std.collections.treap.t[T], f) => (
+    const iter_rev = [T] (a :: std.collections.Treap.t[T], f) => (
         match a with (
             | :Empty => ()
             | :Node node => (
@@ -291,38 +291,38 @@ let brute = (
     let n = 0;
     let m = 0;
     let a = Matrix.create (0, 0);
-    let vars = list.create ();
-    let free = list.create ();
-    let pivot = list.create ();
+    let vars = List.create ();
+    let free = List.create ();
+    let pivot = List.create ();
     let current_answer = 0;
     let check = () => with_return (
         # print "TRY:";
-        # list.iter (
+        # List.iter (
         #     &free,
         #     &var => (
-        #         let value = (list.at (&vars, var))^;
+        #         let value = (List.at (&vars, var))^;
         #         # print (to_string var + " = " + to_string value);
         #         current_answer += value;
         #     ),
         # );
         # 300 * 300 * 300 * 10 * 10 * 100000
         # print "pivot:";
-        treap.iter_rev (
+        Treap.iter_rev (
             pivot.inner,
             &(.var, .row) => (
                 let row = Matrix.row (&a, row);
-                let result = (list.at (row, m - 1))^;
+                let result = (List.at (row, m - 1))^;
                 for j in var + 1..m - 1 do (
-                    result -= (list.at (&vars, j))^ * (list.at (row, j))^;
+                    result -= (List.at (&vars, j))^ * (List.at (row, j))^;
                 );
-                let k = (list.at (row, var))^;
+                let k = (List.at (row, var))^;
                 if result % k != 0 then return;
                 result /= k;
                 if result < 0 then return;
                 current_answer += result;
                 if current_answer >= machine_answer then return;
                 # print (to_string var + " = " + to_string result);
-                (list.at (&vars, var))^ = result;
+                (List.at (&vars, var))^ = result;
             ),
         );
         # print ("current = " + to_string current_answer);
@@ -336,7 +336,7 @@ let brute = (
         ) else (
             for x in 0..max + 1 do (
                 # print ("BRUTE " + to_string i + " = " + to_string x);
-                (list.at (&vars, (list.at (&free, i))^))^ = x;
+                (List.at (&vars, (List.at (&free, i))^))^ = x;
                 current_answer += x;
                 force (i - 1, .max = max - x);
                 current_answer -= x;
@@ -346,14 +346,14 @@ let brute = (
 );
 
 let max_combinations = 0;
-let solve_part2 = (machine :: Machine) -> int32 => with_return (
+let solve_part2 = (machine :: Machine) -> Int32 => with_return (
     # return 0;
-    let n = list.length &machine.joltages;
-    let m = list.length &machine.buttons + 1;
+    let n = List.length &machine.joltages;
+    let m = List.length &machine.buttons + 1;
     let a = Matrix.create (n, m);
     (
         let i = 0;
-        list.iter (
+        List.iter (
             &machine.buttons,
             &button => (
                 for j in 0..n do (
@@ -366,7 +366,7 @@ let solve_part2 = (machine :: Machine) -> int32 => with_return (
             ),
         );
         let i = 0;
-        list.iter (
+        List.iter (
             &machine.joltages,
             &x => (
                 (Matrix.at_mut (&a, i, m - 1))^ = x;
@@ -378,15 +378,15 @@ let solve_part2 = (machine :: Machine) -> int32 => with_return (
     let (.free, .pivot) = gauss_elimination (&a);
     
     let max_joltage = 0;
-    list.iter (&machine.joltages, &x => (max_joltage = max (max_joltage, x)));
+    List.iter (&machine.joltages, &x => (max_joltage = max (max_joltage, x)));
     print ("max_joltage = " + to_string max_joltage);
-    let combinations = pow (max_joltage, list.length &free);
+    let combinations = pow (max_joltage, List.length &free);
     max_combinations = max (max_combinations, combinations);
     print ("combinations(max^free) = " + to_string combinations);
     
-    let vars = list.create ();
+    let vars = List.create ();
     for _ in 0..m - 1 do (
-        list.push_back (&vars, 0);
+        List.push_back (&vars, 0);
     );
     
     brute.machine_answer = 1000000000;
@@ -396,7 +396,7 @@ let solve_part2 = (machine :: Machine) -> int32 => with_return (
     brute.vars = vars;
     brute.free = free;
     brute.pivot = pivot;
-    brute.force (list.length &free - 1, .max = max_joltage);
+    brute.force (List.length &free - 1, .max = max_joltage);
     
     print ("answer = " + to_string brute.machine_answer);
     brute.machine_answer
@@ -413,9 +413,9 @@ String.lines (
         if String.length line == 0 then return;
         let machine = parse_machine line;
         
-        max_buttons = max (max_buttons, list.length &machine.buttons);
-        max_joltages = max (max_joltages, list.length &machine.joltages);
-        list.iter (
+        max_buttons = max (max_buttons, List.length &machine.buttons);
+        max_joltages = max (max_joltages, List.length &machine.joltages);
+        List.iter (
             &machine.joltages,
             &x => (
                 max_joltage = max (max_joltage, x);
