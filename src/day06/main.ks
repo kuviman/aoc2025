@@ -18,13 +18,13 @@ const Problem = type (
     .op :: Op,
 );
 
-let problems = List.create ();
+let mut problems = List.create ();
 
 if part1 then (
     String.lines (
         input,
         line => (
-            let idx = 0;
+            let mut idx = 0;
             String.split (
                 line,
                 ' ',
@@ -32,20 +32,20 @@ if part1 then (
                     if String.length part == 0 then return;
                     if idx >= List.length &problems then (
                         List.push_back (
-                            &problems,
+                            &mut problems,
                             (
                                 .numbers = List.create (),
                                 .op = :Unknown,
                             ),
                         );
                     );
-                    let problem = List.at (&problems, idx);
+                    let problem = List.at_mut (&mut problems, idx);
                     if part == "+" then (
                         problem^.op = :Add;
                     ) else if part == "*" then (
                         problem^.op = :Multiply;
                     ) else (
-                        List.push_back (&problem^.numbers, parse part);
+                        List.push_back (&mut problem^.numbers, parse part);
                     );
                     idx += 1;
                 ),
@@ -53,21 +53,21 @@ if part1 then (
         ),
     );
 ) else (
-    let lines = List.create ();
+    let mut lines = List.create ();
     String.lines (
         input,
         line => (
             if String.length line != 0 then (
-                List.push_back (&lines, line);
+                List.push_back (&mut lines, line);
             );
         ),
     );
     let line_length = String.length (List.at (&lines, 0))^;
-    let start_column = 0;
+    let mut start_column = 0;
     while start_column < line_length do (
-        let end_column = start_column;
+        let mut end_column = start_column;
         while end_column < line_length do (
-            let full_of_spaces = true;
+            let mut full_of_spaces = true;
             List.iter (
                 &lines,
                 &line => (
@@ -79,10 +79,10 @@ if part1 then (
             if full_of_spaces then break;
             end_column += 1;
         );
-        let numbers = List.create ();
-        let op :: Op = :Unknown;
+        let mut numbers = List.create ();
+        let mut op :: Op = :Unknown;
         for column in start_column..end_column do (
-            let number = 0;
+            let mut number = 0;
             List.iter (
                 &lines,
                 &line => (
@@ -96,9 +96,9 @@ if part1 then (
                     );
                 ),
             );
-            List.push_back (&numbers, int32_as_Int64 number);
+            List.push_back (&mut numbers, int32_as_Int64 number);
         );
-        List.push_back (&problems, (.numbers, .op));
+        List.push_back (&mut problems, (.numbers, .op));
         start_column = end_column + 1;
     );
 );
@@ -108,7 +108,7 @@ let calculate_problem = (problem :: &Problem) -> Int64 => (
         | :Add => (int32_as_Int64 0, std.op.add[Int64])
         | :Multiply => (int32_as_Int64 1, std.op.mul[Int64])
     );
-    let result = start;
+    let mut result = start;
     List.iter (
         &problem^.numbers,
         &number => (
@@ -118,7 +118,7 @@ let calculate_problem = (problem :: &Problem) -> Int64 => (
     result
 );
 
-let answer = 0 |> int32_as_Int64;
+let mut answer = 0 |> int32_as_Int64;
 List.iter (
     &problems,
     problem => (

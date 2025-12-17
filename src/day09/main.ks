@@ -18,7 +18,7 @@ const Coords = type (
     .y :: Int64,
 );
 
-let tiles :: List.t[Coords] = List.create ();
+let mut tiles :: List.t[Coords] = List.create ();
 String.lines (
     input,
     line => (
@@ -27,7 +27,7 @@ String.lines (
             let x = x |> parse;
             let y = y |> parse;
             let coords :: Coords = (.x, .y);
-            List.push_back (&tiles, coords);
+            List.push_back (&mut tiles, coords);
         );
     ),
 );
@@ -57,7 +57,7 @@ const abs = [T] (x :: T) -> T => (
 
 let answer = if part1 then (
     let n = List.length &tiles;
-    let answer = zero;
+    let mut answer = zero;
     for i in 0..n do (
         for j in 0..i do (
             let a = List.at (&tiles, i);
@@ -71,7 +71,7 @@ let answer = if part1 then (
     answer
 ) else (
     use std.collections.Treap;
-    let xs, ys = Treap.create (), Treap.create ();
+    let mut xs, mut ys = Treap.create (), Treap.create ();
     let idx_of = (t :: &Treap.t[_], x :: Int64) -> Int32 => (
         let less, _ = Treap.split (
             t^,
@@ -92,7 +92,7 @@ let answer = if part1 then (
         .x = uncompress_coord (&xs, x),
         .y = uncompress_coord (&ys, y),
     );
-    let add = (t :: &Treap.t[_], x :: Int64) => (
+    let add = (t :: &mut Treap.t[_], x :: Int64) => (
         let less, greater_or_equal = Treap.split (
             t^,
             data => (
@@ -122,7 +122,7 @@ let answer = if part1 then (
         # print <| Treap.to_string (t, &x => to_string x);
         # print "===";
     );
-    let i = 0;
+    let mut i = 0;
     List.iter (
         &tiles,
         &(.x, .y) => (
@@ -132,12 +132,12 @@ let answer = if part1 then (
                 + "/"
                 + (to_string <| List.length &tiles)
             );
-            add (&xs, x - one);
-            add (&xs, x);
-            add (&xs, x + one);
-            add (&ys, y - one);
-            add (&ys, y);
-            add (&ys, y + one);
+            add (&mut xs, x - one);
+            add (&mut xs, x);
+            add (&mut xs, x + one);
+            add (&mut ys, y - one);
+            add (&mut ys, y);
+            add (&mut ys, y + one);
             i += 1;
         ),
     );
@@ -148,13 +148,13 @@ let answer = if part1 then (
         + (to_string <| Treap.length &ys)
     );
     
-    let vs = List.create ();
+    let mut vs = List.create ();
     List.iter (
         &tiles,
         &(.x, .y) => (
             let x = idx_of (&xs, x);
             let y = idx_of (&ys, y);
-            List.push_back (&vs, (.x, .y));
+            List.push_back (&mut vs, (.x, .y));
         ),
     );
     if verbose then (
@@ -178,7 +178,7 @@ let answer = if part1 then (
             .repr :: Treap.t[Treap.t[Int32]],
         );
         let create = (n, m) -> t => (
-            let repr = Treap.create ();
+            let mut repr = Treap.create ();
             for i in 0..n do (
                 print (
                     "[INFO] progress "
@@ -186,7 +186,7 @@ let answer = if part1 then (
                     + "/"
                     + (to_string n)
                 );
-                let row = Treap.create ();
+                let mut row = Treap.create ();
                 for i in 0..m do (
                     row = Treap.join (row, Treap.singleton 0);
                 );
@@ -194,13 +194,15 @@ let answer = if part1 then (
             );
             (.n, .m, .repr)
         );
-        let at_mut = (map :: &t, i, j) -> &Int32 => (
-            Treap.at (Treap.at (&map^.repr, i), j)
+        let at_mut = (map :: &mut t, i, j) -> &mut Int32 => (
+            Treap.at_mut (Treap.at_mut (&mut map^.repr, i), j)
         );
-        let at = (map, i, j) => (at_mut (map, i, j))^;
+        let at = (map, i, j) => (
+            (Treap.at (Treap.at (&map^.repr, i), j))^
+        );
     );
     print "[INFO] creating empty map";
-    let map = Map.create (Treap.length &xs, Treap.length &ys);
+    let mut map = Map.create (Treap.length &xs, Treap.length &ys);
     print "[INFO] created empty map";
     
     print "[INFO] drawing edges";
@@ -211,20 +213,20 @@ let answer = if part1 then (
             + "/"
             + (to_string <| List.length &vs)
         );
-        let next = i + 1;
+        let mut next = i + 1;
         if next == List.length &vs then (
             next = 0;
         );
-        let next_next = next + 1;
+        let mut next_next = next + 1;
         if next_next == List.length &vs then (
             next_next = 0;
         );
-        let a = (List.at (&vs, i))^;
-        let b = (List.at (&vs, next))^;
+        let mut a = (List.at (&vs, i))^;
+        let mut b = (List.at (&vs, next))^;
         let c = (List.at (&vs, next_next))^;
         if a.y == b.y then (
-            let add = 1;
-            let y = a.y;
+            let mut add = 1;
+            let mut y = a.y;
             if a.x > b.x then (
                 # TODO a, b = b, a
                 let t = b;
@@ -234,12 +236,12 @@ let answer = if part1 then (
                 y += 1;
             );
             for x in a.x..b.x do (
-                (Map.at_mut (&map, x, y))^ += add;
+                (Map.at_mut (&mut map, x, y))^ += add;
             );
         ) else (
             if a.y < b.y then (
-                (Map.at_mut (&map, a.x, a.y))^ += 1;
-                (Map.at_mut (&map, a.x, b.y + 1))^ -= 1;
+                (Map.at_mut (&mut map, a.x, a.y))^ += 1;
+                (Map.at_mut (&mut map, a.x, b.y + 1))^ -= 1;
             );
         );
     );
@@ -254,7 +256,7 @@ let answer = if part1 then (
             + (to_string map.n)
         );
         for j in 1..map.m do (
-            let cell = Map.at_mut (&map, i, j);
+            let cell = Map.at_mut (&mut map, i, j);
             cell^ += Map.at (&map, i, j - 1);
         );
     );
@@ -262,14 +264,14 @@ let answer = if part1 then (
     List.iter (
         &vs,
         &(.x, .y) => (
-            (Map.at_mut (&map, x, y))^ = ACTUAL_CORNER;
+            (Map.at_mut (&mut map, x, y))^ = ACTUAL_CORNER;
         ),
     );
     print "[INFO] done filling the map";
     
     if input_path == "example.txt" then (
         for y in 0..map.m do (
-            let s = "";
+            let mut s = "";
             for x in 0..map.n do (
                 let x = Map.at (&map, x, y);
                 let c = if x == 0 then " " else if x == 1 then "X" else "#";
@@ -280,14 +282,14 @@ let answer = if part1 then (
         );
     );
     
-    let answer = as_Int64 0;
+    let mut answer = as_Int64 0;
     for i in 0..List.length &vs do (
-        let next = i + 1;
+        let mut next = i + 1;
         if next == List.length &vs then (
             next = 0;
         );
-        let a = (List.at (&vs, i))^;
-        let b = (List.at (&vs, next))^;
+        let mut a = (List.at (&vs, i))^;
+        let mut b = (List.at (&vs, next))^;
         if a.y != b.y then continue;
         if input_path == "input.txt" and abs (a.x - b.x) < 100 then continue;
         if a.x > b.x then (
@@ -304,10 +306,10 @@ let answer = if part1 then (
             )
         );
         let try_direction = dir => (
-            let a = (.x = a.x, .y = a.y);
-            let b = (.x = b.x, .y = b.y);
+            let mut a = (.x = a.x, .y = a.y);
+            let mut b = (.x = b.x, .y = b.y);
             print ("[INFO] trying direction " + to_string dir);
-            let max_y = b.y;
+            let mut max_y = b.y;
             while Map.at (&map, b.x, max_y) != 0 do (
                 max_y += dir;
             );

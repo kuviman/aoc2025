@@ -1,12 +1,9 @@
 module:
 use std.prelude.*;
-let part1 = true;
-let input_path = "example.txt";
+let mut part1 = true;
+let mut input_path = "example.txt";
 (
-    let argc = std.sys.argc ();
-    let i = 1;
-    loop (
-        if i >= argc then break;
+    for i in 1..std.sys.argc() do (
         let arg = std.sys.argv_at i;
         if arg == "--part2" then (
             part1 = false;
@@ -15,7 +12,6 @@ let input_path = "example.txt";
         ) else (
             input_path = arg;
         );
-        i = i + 1;
     );
 );
 let part2 = not part1;

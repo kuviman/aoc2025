@@ -34,8 +34,8 @@ let parse_instruction = s -> Instruction => (
 );
 let read_input = () -> Input => (
     let input = std.fs.read_file input_path;
-    let result = List.create ();
-    let line_idx = 0;
+    let mut result = List.create ();
+    let mut line_idx = 0;
     String.lines (
         input,
         line => (
@@ -44,7 +44,7 @@ let read_input = () -> Input => (
                 line_idx += 1;
                 # std.dbg.print line;
                 List.push_back (
-                    &result,
+                    &mut result,
                     parse_instruction line,
                 );
             );
@@ -54,14 +54,14 @@ let read_input = () -> Input => (
 );
 let input = read_input ();
 # List.iter (input, std.dbg.print[_])
-let current_position = 50;
-let answer = 0;
+let mut current_position = 50;
+let mut answer = 0;
 let rotate = (delta) => (
     if part2 then (
         if delta > 0 then (
             answer += (current_position + delta) / 100;
         ) else (
-            let zero = 0;
+            let mut zero = 0;
             let target = current_position + delta;
             while zero >= target do (
                 if current_position != zero then (

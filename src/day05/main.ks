@@ -70,10 +70,10 @@ const segment_set = (
     );
 );
 
-let ranges = segment_set.create ();
-let ids = List.create ();
+let mut ranges = segment_set.create ();
+let mut ids = List.create ();
 
-let parsing_ranges = true;
+let mut parsing_ranges = true;
 String.lines (
     input,
     line => (
@@ -87,14 +87,14 @@ String.lines (
                 ranges = segment_set.add (ranges, (start, end + 1 as_Int64));
             ) else (
                 let id = parse line;
-                List.push_back (&ids, id);
+                List.push_back (&mut ids, id);
             );
         );
     ),
 );
 
 let answer = if part1 then (
-    let answer = 0 as_Int64;
+    let mut answer = 0 as_Int64;
     List.iter (
         &ids,
         &id => (

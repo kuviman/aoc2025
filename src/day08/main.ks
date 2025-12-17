@@ -18,17 +18,17 @@ let max_points = if std.sys.argc () >= 4 then (
     10000
 );
 
-let points :: List.t[Point] = List.create ();
+let mut points :: List.t[Point] = List.create ();
 String.lines (
     input,
     line => (
         if String.length line != 0 and List.length &points < max_points then (
-            let coords = List.create ();
+            let mut coords = List.create ();
             String.split (
                 line,
                 ',',
                 part => (
-                    List.push_back (&coords, part |> parse);
+                    List.push_back (&mut coords, part |> parse);
                 )
             );
             let point = (
@@ -37,7 +37,7 @@ String.lines (
                 .z = (List.at (&coords, 2))^,
             );
             List.push_back (
-                &points,
+                &mut points,
                 point,
             );
         );
@@ -70,7 +70,7 @@ const PairSet = (
         Treap.length &set^.inner
     );
     
-    const add = (set :: &t, d :: data) => (
+    const add = (set :: &mut t, d :: data) => (
         let left, right = Treap.split (
             set^.inner,
             node => (
@@ -90,8 +90,8 @@ const PairSet = (
         );
     );
     
-    const keep_minimum = (set :: &t, n :: Int32) => (
-        if length set > n then (
+    const keep_minimum = (set :: &mut t, n :: Int32) => (
+        if length &set^ > n then (
             let left, _right = Treap.split_at (set^.inner, n);
             set^.inner = left;
         );
@@ -101,7 +101,7 @@ const PairSet = (
         Treap.iter (&set^.inner, f);
     );
 );
-let pairs = PairSet.create ();
+let mut pairs = PairSet.create ();
 
 for i in 0..n do (
     print (
@@ -117,9 +117,9 @@ for i in 0..n do (
         let p_j = List.at (&points, j);
         let sqr_d = sqr_distance (p_i, p_j);
         # dbg.print (p_i^, p_j^, .sqr_d, .pairs_to_connect);
-        PairSet.add (&pairs, (i, j, .sqr_d));
+        PairSet.add (&mut pairs, (i, j, .sqr_d));
         if part1 then (
-            PairSet.keep_minimum (&pairs, pairs_to_connect);
+            PairSet.keep_minimum (&mut pairs, pairs_to_connect);
         );
     );
 );
@@ -127,20 +127,20 @@ for i in 0..n do (
 const DSU = (
     module:
     
-    const root = type (
+    const root = newtype (
         .id :: Int32,
         .count :: Int32,
     );
-    const node = type (
+    const node = newtype (
         | :Root (
             .data :: root,
         )
         | :NonRoot (
-            .closer_to_root :: &node,
+            .closer_to_root :: &mut node,
         )
     );
     
-    let next_id = 0;
+    let mut next_id = 0;
     let new_node = () -> node => (
         next_id += 1;
         :Root (
@@ -151,7 +151,7 @@ const DSU = (
         )
     );
     
-    const find_root_node = (v :: &node) -> &node => (
+    const find_root_node = (v :: &mut node) -> &mut node => (
         match v^ with (
             | :Root _ => v
             | :NonRoot (.closer_to_root) => (
@@ -162,14 +162,15 @@ const DSU = (
         )
     );
     
-    const find_root = (v :: &node) -> &root => (
+    const find_root = (v :: &mut node) -> &mut root => (
         match (find_root_node v)^ with (
-            | :Root root => &root.data
+            # TODO ref mut
+            | :Root mut root => &mut root.data
             | :NonRoot _ => panic "bug"
         )
     );
     
-    const merge = (a :: &node, b :: &node) -> Bool => (
+    const merge = (a :: &mut node, b :: &mut node) -> Bool => (
         let a = find_root_node a;
         let b = find_root_node b;
         let root_a = find_root a;
@@ -192,19 +193,19 @@ const DSU = (
         )
     );
     
-    const is_same = (a :: &node, b :: &node) -> Bool => (
+    const is_same = (a :: &mut node, b :: &mut node) -> Bool => (
         let root_a = find_root a;
         let root_b = find_root b;
         root_a^.id == root_b^.id
     );
 );
 
-let nodes = List.create ();
+let mut nodes = List.create ();
 for i in 0..n do (
-    List.push_back (&nodes, DSU.new_node ())
+    List.push_back (&mut nodes, DSU.new_node ())
 );
 
-let answer_part2 = 0 |> as_Int64;
+let mut answer_part2 = 0 |> as_Int64;
 PairSet.iter (
     &pairs,
     &(i, j, .sqr_d) => (
@@ -219,23 +220,23 @@ PairSet.iter (
         #     + " with sqr_d="
         #     + (to_string sqr_d)
         # );
-        if DSU.merge (List.at (&nodes, i), List.at (&nodes, j)) then (
+        if DSU.merge (List.at_mut (&mut nodes, i), List.at_mut (&mut nodes, j)) then (
             answer_part2 = a^.x * b^.x;
         );
     ),
 );
 
 let answer = if part1 then (
-    let visited = List.create ();
+    let mut visited = List.create ();
     for i in 0..n do (
-        List.push_back (&visited, false);
+        List.push_back (&mut visited, false);
     );
     
-    const sort_by = [T] (a :: &List.t[T], .less :: (&T, &T) -> Bool) => (
+    const sort_by = [T] (a :: &mut List.t[T], .less :: (&T, &T) -> Bool) => (
         use std.collections.Treap;
-        let t = Treap.create ();
+        let mut t = Treap.create ();
         List.iter (
-            a,
+            &a^,
             &x => (
                 let left, right = Treap.split (
                     t,
@@ -259,24 +260,24 @@ let answer = if part1 then (
         a^.inner = t;
     );
     
-    let component_sizes = List.create ();
-    List.iter (
-        &nodes,
+    let mut component_sizes = List.create ();
+    List.iter_mut (
+        &mut nodes,
         node => (
             let root = DSU.find_root node;
             # dbg.print root^;
             # dbg.print <| (List.length &visited, root^.id - 1);
-            let visited = List.at (&visited, root^.id - 1);
+            let visited = List.at_mut (&mut visited, root^.id - 1);
             if not visited^ then (
                 visited^ = true;
-                List.push_back (&component_sizes, root^.count);
+                List.push_back (&mut component_sizes, root^.count);
                 # dbg.print root^.count;
             );
         ),
     );
-    sort_by (&component_sizes, .less = (&a, &b) => a > b);
+    sort_by (&mut component_sizes, .less = (&a, &b) => a > b);
     
-    let answer = 1;
+    let mut answer = 1;
     for i in 0..3 do (
         answer *= (List.at (&component_sizes, i))^;
     );

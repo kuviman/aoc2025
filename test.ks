@@ -15,13 +15,13 @@ for day in 1..13 do (
         )
         | :None => ()
     );
-    let path = "./src/day";
+    let mut path = "./src/day";
     if day < 10 then (
         path += "0";
     );
     path += to_string day;
     path += "/main.ks";
-    let test = (part, file) => with_return (
+    let test = (part, mut file) => with_return (
         if day == 12 then (
             if not (part == 1 and file == "input.txt") then return;
         );

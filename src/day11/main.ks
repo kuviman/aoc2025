@@ -3,84 +3,35 @@ use (include "../common.ks").*;
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
+use std.collections.Map;
+
 let verbose = false;
 
 let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
 let zero = as_Int64 0;
 let one = as_Int64 1;
 
-const Map = (
-    module:
-    use std.collections.Treap;
-    const KV = [K, V] type (
-        .key :: K,
-        .value :: V,
-    );
-    const t = [K, V] type (
-        .inner :: Treap.t[KV[K, V]],
-    );
-    const create = [K, V] () -> t[K, V] => (
-        .inner = Treap.create ()
-    );
-    
-    const get_or_init = [K, V] (
-        map :: &t[K, V],
-        key :: K,
-        init :: () -> V,
-    ) -> &V => (
-        let less, greater_or_equal = Treap.split (
-            map^.inner,
-            data => (
-                if data^.value.key < key then (
-                    :LeftSubtree
-                ) else (
-                    :RightSubtree
-                )
-            ),
-        );
-        let equal, greater = Treap.split (
-            greater_or_equal,
-            data => (
-                if data^.value.key <= key then (
-                    :LeftSubtree
-                ) else (
-                    :RightSubtree
-                )
-            ),
-        );
-        if Treap.length &equal == 0 then (
-            equal = Treap.singleton (.key, .value = init ());
-        );
-        map^.inner = Treap.join (less, Treap.join (equal, greater));
-        &(Treap.at (&equal, 0))^.value
-    );
-    
-    const iter = [K, V] (map :: &t[K, V], f :: &KV[K, V] -> ()) => (
-        Treap.iter (&map^.inner, f)
-    );
-);
-
 const Graph = (
     module:
     const VertexId = String;
-    const Vertex = [T] type (
+    const Vertex = [T] newtype (
         .id :: VertexId,
         .data :: T,
-        .out :: List.t[type (&Vertex[T])],
+        .out :: List.t[type (&mut Vertex[T])],
     );
-    const t = [T] type (
+    const t = [T] newtype (
         .vs :: Map.t[VertexId, Vertex[T]],
     );
     const create = [T] () -> t[T] => (
         .vs = Map.create ()
     );
     const get_or_init_vertex = [T] (
-        g :: &t[T],
+        g :: &mut t[T],
         id :: VertexId,
         init :: () -> T,
-    ) -> &Vertex[T] => (
+    ) -> &mut Vertex[T] => (
         Map.get_or_init (
-            &g^.vs,
+            &mut g^.vs,
             id,
             () => (
                 .id,
@@ -89,15 +40,18 @@ const Graph = (
             ),
         )
     );
+    const get_mut = [T] (g :: &mut t[T], id :: VertexId) -> &mut Vertex[T] => (
+        get_or_init_vertex (g, id, () => panic "vertex not found")
+    );
     const get = [T] (g :: &t[T], id :: VertexId) -> &Vertex[T] => (
-        get_or_init_vertex (g, id, () => (panic "vertex not found"))
+        Map.get (&g^.vs, id) |> Option.unwrap
     );
     const print = [T] (g :: &t[T]) => (
         Map.iter (
             &g^.vs,
             &(.key = id, .value = v) => (
-                let s = id + ": ";
-                let first = true;
+                let mut s = id + ": ";
+                let mut first = true;
                 List.iter (
                     &v.out,
                     &u => (
@@ -115,7 +69,7 @@ const Graph = (
     );
 );
 
-const Pt2Data = type (
+const Pt2Data = newtype (
     # [visited_dac][visited_fft]
     .false_false :: Int64,
     .false_true :: Int64,
@@ -123,14 +77,14 @@ const Pt2Data = type (
     .true_true :: Int64,
 );
 
-const VertexData = type (
+const VertexData = newtype (
     .pt2 :: Pt2Data,
     .paths_to_target :: Int32,
 );
-let g :: Graph.t[VertexData] = Graph.create ();
+let mut g :: Graph.t[VertexData] = Graph.create ();
 let get_or_init_vertex = (name :: String) => (
     Graph.get_or_init_vertex (
-        &g,
+        &mut g,
         name,
         () => (
             .paths_to_target = -1,
@@ -156,7 +110,7 @@ String.lines (
                 let u = String.trim u;
                 if String.length u != 0 then (
                     let u = get_or_init_vertex u;
-                    List.push_back (&v^.out, u);
+                    List.push_back (&mut v^.out, u);
                 );
             ),
         );
@@ -172,7 +126,7 @@ let Part1 = (
     
     let dp = v => with_return (
         if v^.id == "out" then return 1;
-        let v_result = &v^.data.paths_to_target;
+        let v_result = &mut v^.data.paths_to_target;
         if v_result^ == -1 then (
             v_result^ = 0;
             List.iter (
@@ -185,7 +139,7 @@ let Part1 = (
         v_result^
     );
     
-    let solve = () => dp <| Graph.get (&g, "you");
+    let solve = () => dp <| Graph.get_mut (&mut g, "you");
 );
 
 let Part2 = (
@@ -199,18 +153,18 @@ let Part2 = (
                 return zero;
             );
         );
-        let data = &v^.data.pt2;
+        let data = &mut v^.data.pt2;
         let v_result = if visited_dac then (
             if visited_fft then (
-                &data^.true_true
+                &mut data^.true_true
             ) else (
-                &data^.true_false
+                &mut data^.true_false
             )
         ) else (
             if visited_fft then (
-                &data^.false_true
+                &mut data^.false_true
             ) else (
-                &data^.false_false
+                &mut data^.false_false
             )
         );
         if v_result^ == -one then (
@@ -226,7 +180,7 @@ let Part2 = (
         );
         v_result^
     );
-    let solve = () => dp (Graph.get (&g, "svr"), false, false);
+    let solve = () => dp (Graph.get_mut (&mut g, "svr"), false, false);
 );
 
 let answer = if part1 then (

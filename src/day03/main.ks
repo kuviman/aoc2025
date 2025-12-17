@@ -15,7 +15,7 @@ let k = if part1 then 2 else 12;
 # let f = () => (
 # List |> map (x => if x < 0 then return :Error)
 # );
-let answer :: Int64 = 0 as_int64;
+let mut answer :: Int64 = 0 as_int64;
 String.lines (
     input,
     line => with_return (
@@ -24,16 +24,15 @@ String.lines (
         
         dbg.print line;
         
-        let start = 0;
-        let line_answer = 0 as_int64;
+        let mut line_answer = 0 as_int64;
         
         let data = (
-            let current_start = 0;
-            let current_end = 0;
-            let positions_by_digit = List.create[Queue.t[Int32]] ();
+            let mut current_start = 0;
+            let mut current_end = 0;
+            let mut positions_by_digit = List.create[Queue.t[Int32]] ();
             for _ in 0..10 do (
                 List.push_back (
-                    &positions_by_digit,
+                    &mut positions_by_digit,
                     Queue.create (),
                 );
             );
@@ -42,7 +41,7 @@ String.lines (
                     let pos = current_start;
                     let digit = String.at (line, pos)
                         |> Char.to_digit;
-                    let positions = List.at (&positions_by_digit, digit);
+                    let positions = List.at_mut (&mut positions_by_digit, digit);
                     let first = Queue.pop positions;
                     if first != pos then (
                         panic "bug";
@@ -57,7 +56,7 @@ String.lines (
                     let pos = current_end;
                     let digit = String.at (line, pos)
                         |> Char.to_digit;
-                    let positions = List.at (&positions_by_digit, digit);
+                    let positions = List.at_mut (&mut positions_by_digit, digit);
                     Queue.push (
                         positions,
                         pos,
@@ -68,7 +67,7 @@ String.lines (
                 );
             );
             let max_in_range = () -> (.index :: Int32, .value :: Int32) => with_return (
-                let digit = 9;
+                let mut digit = 9;
                 while digit >= 0 do (
                     let positions = List.at (&positions_by_digit, digit);
                     if Queue.length positions != 0 then (

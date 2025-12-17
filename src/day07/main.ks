@@ -8,13 +8,13 @@ impl syntax (value as_Int64) = `(
     parse (to_string $value)
 );
 
-let map = List.create ();
+let mut map = List.create ();
 
 String.lines (
     input,
     line => (
         if String.length line != 0 then (
-            List.push_back (&map, line);
+            List.push_back (&mut map, line);
         );
     ),
 );
@@ -24,15 +24,15 @@ let m = String.length (List.at (&map, 0))^;
 
 let answer :: Int64 = unwindable block (
     if part1 then (
-        let answer = 0 as_Int64;
-        let current_beams = List.create ();
+        let mut answer = 0 as_Int64;
+        let mut current_beams = List.create ();
         for i in 0..m do (
-            List.push_back (&current_beams, String.at (first_line^, i) == 'S');
+            List.push_back (&mut current_beams, String.at (first_line^, i) == 'S');
         );
         for i in 0..n - 1 do (
-            let next_beams = List.create ();
+            let mut next_beams = List.create ();
             for j in 0..m do (
-                List.push_back (&next_beams, false);
+                List.push_back (&mut next_beams, false);
             );
             for j in 0..m do (
                 if (List.at (&current_beams, j))^ then (
@@ -40,10 +40,10 @@ let answer :: Int64 = unwindable block (
                     let char_below = String.at (line_below^, j);
                     if char_below == '^' then (
                         answer += 1 as_Int64;
-                        (List.at (&next_beams, j - 1))^ = true;
-                        (List.at (&next_beams, j + 1))^ = true;
+                        (List.at_mut (&mut next_beams, j - 1))^ = true;
+                        (List.at_mut (&mut next_beams, j + 1))^ = true;
                     ) else (
-                        (List.at (&next_beams, j))^ = true;
+                        (List.at_mut (&mut next_beams, j))^ = true;
                     );
                 );
             );
@@ -51,14 +51,14 @@ let answer :: Int64 = unwindable block (
         );
         unwind block answer;
     ) else (
-        let next_row_answers = List.create ();
+        let mut next_row_answers = List.create ();
         for _ in 0..m do (
-            List.push_back (&next_row_answers, 0 as_Int64);
+            List.push_back (&mut next_row_answers, 0 as_Int64);
         );
         
         @syntax "for_range_rev" 7.5 wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
         impl syntax (for i in (start .. end).rev() do body) = `(
-            let _loop_var = $end;
+            let mut _loop_var = $end;
             while _loop_var > $start do (
                 _loop_var -= 1;
                 let $i = _loop_var;
@@ -68,9 +68,9 @@ let answer :: Int64 = unwindable block (
         
         for i in (0 .. n - 1).rev() do (
             # dbg.print "inside loop";
-            let current_row_answers = List.create ();
+            let mut current_row_answers = List.create ();
             for j in 0..m do (
-                let current_cell_answer = 0 as_Int64;
+                let mut current_cell_answer = 0 as_Int64;
                 let line_below = List.at (&map, i + 1);
                 let char_below = String.at (line_below^, j);
                 if char_below == '^' then (
@@ -83,7 +83,7 @@ let answer :: Int64 = unwindable block (
                     current_cell_answer = (List.at (&next_row_answers, j))^;
                 );
                 # print ("at " + to_string i + ", " + to_string j + " = " + to_string current_cell_answer);
-                List.push_back (&current_row_answers, current_cell_answer);
+                List.push_back (&mut current_row_answers, current_cell_answer);
             );
             next_row_answers = current_row_answers;
         );

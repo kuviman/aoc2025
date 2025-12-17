@@ -24,7 +24,7 @@ const Set = (
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 # TODO lang
-let answer :: Int64 = "0" |> parse;
+let mut answer :: Int64 = "0" |> parse;
 String.split (
     input,
     ',',
@@ -38,15 +38,15 @@ String.split (
         ) else (
             end |> to_string |> String.length
         );
-        let visited = Set.create ();
+        let mut visited = Set.create ();
         for times in 2..(max_times + 1) do (
-            let x :: Int32 = (
+            let mut x :: Int32 = (
                 # let s = start |> to_string;
                 # let i = (String.length s) / 2;
                 # String.substring (s, i, String.length s - i)
                 #     |> parse
-                let len = (String.length (to_string start) + times - 1) / times;
-                let s = "1";
+                let mut len = (String.length (to_string start) + times - 1) / times;
+                let mut s = "1";
                 while len > 1 do (
                     s += "0";
                     len -= 1;
@@ -58,7 +58,7 @@ String.split (
             let one = "1" |> parse;
             loop (
                 let x_s = to_string x;
-                let combined_s = "";
+                let mut combined_s = "";
                 for _ in 0..times do (
                     combined_s += x_s;
                 );
