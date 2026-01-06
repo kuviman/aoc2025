@@ -21,14 +21,14 @@ for day in 1..13 do (
     );
     path += to_string day;
     path += "/main.ks";
-    let test = (part, mut file) => with_return (
+    let test = (part :: Int32, mut file) => with_return (
         if day == 12 then (
             if not (part == 1 and file == "input.txt") then return;
         );
         if day == 11 and part == 2 and file == "example.txt" then (
             file = "example.part2.txt";
         );
-        let command = path + " --part" + to_string part + " " + file;
+        let command = "kast run --target javascript " + path + " --part" + to_string part + " " + file;
         print ("executing " + command);
         let exit_code = std.sys.exec command;
         if exit_code != 0 then (

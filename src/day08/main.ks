@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
@@ -19,29 +19,22 @@ let max_points = if std.sys.argc () >= 4 then (
 );
 
 let mut points :: List.t[Point] = List.create ();
-String.lines (
-    input,
-    line => (
-        if String.length line != 0 and List.length &points < max_points then (
-            let mut coords = List.create ();
-            String.split (
-                line,
-                ',',
-                part => (
-                    List.push_back (&mut coords, part |> parse);
-                )
-            );
-            let point = (
-                .x = (List.at (&coords, 0))^,
-                .y = (List.at (&coords, 1))^,
-                .z = (List.at (&coords, 2))^,
-            );
-            List.push_back (
-                &mut points,
-                point,
-            );
+for line in String.lines input do (
+    if String.length line != 0 and List.length &points < max_points then (
+        let mut coords = List.create ();
+        for part in String.split (line, ',') do (
+            List.push_back (&mut coords, part |> parse);
         );
-    ),
+        let point = (
+            .x = (List.at (&coords, 0))^,
+            .y = (List.at (&coords, 1))^,
+            .z = (List.at (&coords, 2))^,
+        );
+        List.push_back (
+            &mut points,
+            point,
+        );
+    );
 );
 
 print "[INFO] Input read";
@@ -97,8 +90,8 @@ const PairSet = (
         );
     );
     
-    const iter = (set :: &t, f) => (
-        Treap.iter (&set^.inner, f);
+    const iter = (set :: &t) => (
+        Treap.iter &set^.inner
     );
 );
 let mut pairs = PairSet.create ();
@@ -206,24 +199,21 @@ for i in 0..n do (
 );
 
 let mut answer_part2 = 0 |> as_Int64;
-PairSet.iter (
-    &pairs,
-    &(i, j, .sqr_d) => (
-        let a = List.at (&points, i);
-        let b = List.at (&points, j);
-        # dbg.print ("merge", a^, b^);
-        # print (
-        #     "[INFO] merge "
-        #     + (to_string i)
-        #     + " and "
-        #     + (to_string j)
-        #     + " with sqr_d="
-        #     + (to_string sqr_d)
-        # );
-        if DSU.merge (List.at_mut (&mut nodes, i), List.at_mut (&mut nodes, j)) then (
-            answer_part2 = a^.x * b^.x;
-        );
-    ),
+for &(i, j, .sqr_d) in PairSet.iter &pairs do (
+    let a = List.at (&points, i);
+    let b = List.at (&points, j);
+    # dbg.print ("merge", a^, b^);
+    # print (
+    #     "[INFO] merge "
+    #     + (to_string i)
+    #     + " and "
+    #     + (to_string j)
+    #     + " with sqr_d="
+    #     + (to_string sqr_d)
+    # );
+    if DSU.merge (List.at_mut (&mut nodes, i), List.at_mut (&mut nodes, j)) then (
+        answer_part2 = a^.x * b^.x;
+    );
 );
 
 let answer = if part1 then (
@@ -235,45 +225,39 @@ let answer = if part1 then (
     const sort_by = [T] (a :: &mut List.t[T], .less :: (&T, &T) -> Bool) => (
         use std.collections.Treap;
         let mut t = Treap.create ();
-        List.iter (
-            &a^,
-            &x => (
-                let left, right = Treap.split (
-                    t,
-                    node => (
-                        if less (&x, &node^.value) then (
-                            :RightSubtree
-                        ) else (
-                            :LeftSubtree
-                        )
-                    ),
-                );
-                t = Treap.join (
-                    left,
-                    Treap.join (
-                        Treap.singleton x,
-                        right,
-                    ),
-                );
-            ),
+        for &x in List.iter &a^ do (
+            let left, right = Treap.split (
+                t,
+                node => (
+                    if less (&x, &node^.value) then (
+                        :RightSubtree
+                    ) else (
+                        :LeftSubtree
+                    )
+                ),
+            );
+            t = Treap.join (
+                left,
+                Treap.join (
+                    Treap.singleton x,
+                    right,
+                ),
+            );
         );
         a^.inner = t;
     );
     
     let mut component_sizes = List.create ();
-    List.iter_mut (
-        &mut nodes,
-        node => (
-            let root = DSU.find_root node;
-            # dbg.print root^;
-            # dbg.print <| (List.length &visited, root^.id - 1);
-            let visited = List.at_mut (&mut visited, root^.id - 1);
-            if not visited^ then (
-                visited^ = true;
-                List.push_back (&mut component_sizes, root^.count);
-                # dbg.print root^.count;
-            );
-        ),
+    for node in List.iter_mut &mut nodes do (
+        let root = DSU.find_root node;
+        # dbg.print root^;
+        # dbg.print <| (List.length &visited, root^.id - 1);
+        let visited = List.at_mut (&mut visited, root^.id - 1);
+        if not visited^ then (
+            visited^ = true;
+            List.push_back (&mut component_sizes, root^.count);
+            # dbg.print root^.count;
+        );
     );
     sort_by (&mut component_sizes, .less = (&a, &b) => a > b);
     

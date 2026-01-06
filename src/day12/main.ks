@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
@@ -14,7 +14,9 @@ const Shape = type (
 let mut shapes :: List.t[Shape] = List.create ();
 
 let print_shape = (shape :: &Shape) => (
-    List.iter (&shape^.rows, &s => print s);
+    for &s in List.iter &shape^.rows do (
+        print s;
+    );
 );
 
 let mut trivial = 0;
@@ -24,35 +26,25 @@ let mut min_optimal_free_area = 1000000000;
 let mut answer = 0;
 let solve = (.width :: Int32, .height :: Int32, .amounts :: List.t[Int32]) => with_return (
     let mut shape_tiles = List.create ();
-    List.iter (
-        &shapes,
-        &shape => (
-            let mut tiles = 0;
-            List.iter (
-                &shape.rows,
-                &s => String.iter (
-                    s,
-                    c => (
-                        if c == '#' then (
-                            tiles += 1;
-                        );
-                    ),
-                ),
+    for &shape in List.iter &shapes do (
+        let mut tiles = 0;
+        for &s in List.iter &shape.rows do (
+            for c in String.iter s do (
+                if c == '#' then (
+                    tiles += 1;
+                );
             );
-            List.push_back (&mut shape_tiles, tiles);
-        ),
+        );
+        List.push_back (&mut shape_tiles, tiles);
     );
     
     let mut dumb_area = 0;
     let mut optimal_area = 0;
     let mut i = 0;
-    List.iter (
-        &amounts,
-        &amount => (
-            dumb_area += 3 * 3 * amount;
-            optimal_area += (List.at (&shape_tiles, i))^ * amount;
-            i += 1;
-        ),
+    for &amount in List.iter &amounts do (
+        dumb_area += 3 * 3 * amount;
+        optimal_area += (List.at (&shape_tiles, i))^ * amount;
+        i += 1;
     );
     let area = width * height;
     let extra_space_needed = dumb_area - area;
@@ -96,37 +88,30 @@ let end_of_input = () => (
 
 let new_shape = () -> Shape => (.rows = List.create ());
 let mut current_shape :: Shape = new_shape ();
-String.lines (
-    input,
-    line => with_return (
-        if String.length line == 0 then return;
-        if String.index_of (':', line) == -1 then (
-            List.push_back (&mut current_shape.rows, line);
-        ) else (
-            let before_colon, after_colon = String.split_once (line, ':');
-            if List.length (&current_shape.rows) != 0 then (
-                print "[INFO] read shape:";
-                print_shape (&current_shape);
-                List.push_back (&mut shapes, current_shape);
-                current_shape = new_shape ();
-            );
-            if String.length after_colon != 0 then (
-                let width, height = String.split_once (before_colon, 'x');
-                let width = width |> parse;
-                let height = height |> parse;
-                let mut amounts = List.create ();
-                String.split (
-                    after_colon,
-                    ' ',
-                    part => with_return (
-                        if String.length part == 0 then return;
-                        List.push_back (&mut amounts, part |> parse);
-                    ),
-                );
-                solve (.width, .height, .amounts);
-            )
+for line in String.lines input do (
+    if String.length line == 0 then continue;
+    if String.index_of (':', line) == -1 then (
+        List.push_back (&mut current_shape.rows, line);
+    ) else (
+        let before_colon, after_colon = String.split_once (line, ':');
+        if List.length (&current_shape.rows) != 0 then (
+            print "[INFO] read shape:";
+            print_shape (&current_shape);
+            List.push_back (&mut shapes, current_shape);
+            current_shape = new_shape ();
         );
-    ),
+        if String.length after_colon != 0 then (
+            let width, height = String.split_once (before_colon, 'x');
+            let width = width |> parse;
+            let height = height |> parse;
+            let mut amounts = List.create ();
+            for part in String.split (after_colon, ' ') do (
+                if String.length part == 0 then continue;
+                List.push_back (&mut amounts, part |> parse);
+            );
+            solve (.width, .height, .amounts);
+        )
+    );
 );
 end_of_input ();
 

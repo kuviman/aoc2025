@@ -2,34 +2,9 @@
 use std.prelude.*;
 use std.collections.Map;
 
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
-
-@syntax "for_range_rev" 7.5 wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
-impl syntax (for i in (start .. end).rev() do body) = `(
-    let mut _loop_var = $end;
-    while _loop_var > $start do (
-        _loop_var -= 1;
-        let $i = _loop_var;
-        $body;
-    )
-);
-
-@syntax "if_is" 7.5 wrap never = "if" " " value " " "is" " " pattern " " "then" " " body;
-impl syntax (if value is pattern then body) = `(
-    match $value with (
-        | $pattern => $body
-        | _ => ()
-    )
-);
-@syntax "if_is_else" 7.5 wrap never = "if" " " value " " "is" " " pattern " " "then" " " body " " "else" " " else_body ->;
-impl syntax (if value is pattern then body else else_body) = `(
-    match $value with (
-        | $pattern => $body
-        | _ => $else_body
-    )
-);
 
 const strip_prefix = (s :: String, .prefix :: String) -> Option.t[String] => (
     let prefix_len = String.length prefix;
@@ -102,39 +77,33 @@ let parse_letter_rule = line => (
     Map.add (&mut letter_rules, c, rule);
 );
 
-String.lines (
-    input,
-    line => with_return (
-        if String.length line == 0 then (
-            parse_state = match parse_state with (
-                | :LetterMap => :Rules
-                | :Rules => :DigitMap
-                | :DigitMap => return
-            );
-            return;
+for line in String.lines input do (
+    if String.length line == 0 then (
+        parse_state = match parse_state with (
+            | :LetterMap => :Rules
+            | :Rules => :DigitMap
+            | :DigitMap => continue
         );
-        match parse_state with (
-            | :LetterMap => (
-                List.push_back (&mut letter_map, line);
-            )
-            | :Rules => (
-                parse_letter_rule line;
-            )
-            | :DigitMap => (
-                let mut digits = List.create ();
-                String.iter (
-                    line,
-                    c => (
-                        List.push_back (
-                            &mut digits,
-                            Char.to_digit c,
-                        );
-                    ),
+        continue;
+    );
+    match parse_state with (
+        | :LetterMap => (
+            List.push_back (&mut letter_map, line);
+        )
+        | :Rules => (
+            parse_letter_rule line;
+        )
+        | :DigitMap => (
+            let mut digits = List.create ();
+            for c in String.iter line do (
+                List.push_back (
+                    &mut digits,
+                    Char.to_digit c,
                 );
-                List.push_back (&mut digit_map, digits);
-            )
-        );
-    ),
+            );
+            List.push_back (&mut digit_map, digits);
+        )
+    );
 );
 
 let n = List.length &letter_map;
@@ -154,34 +123,26 @@ let mut sudoku_map :: SudokuMap = (
 );
 
 let print_sudoku_map = (sudoku_map :: &SudokuMap) => (
-    List.iter (
-        sudoku_map,
-        row => (
-            let mut line = "";
-            List.iter (
-                row,
-                &cell => match cell with (
-                    | :None => (line += ".")
-                    | :Some x => (line += to_string x)
-                ),
+    for row in List.iter sudoku_map do (
+        let mut line = "";
+        for &cell in List.iter row do (
+            match cell with (
+                | :None => (line += ".")
+                | :Some x => (line += to_string x)
             );
-            print line;
-        ),
+        );
+        print line;
     );
 );
 
 let is_sudoku_solved = (sudoku_map) -> Bool => with_return (
-    List.iter (
-        sudoku_map,
-        row => (
-            List.iter (
-                row,
-                &cell => match cell with (
-                    | :None => return false
-                    | :Some _ => ()
-                ),
+    for row in List.iter sudoku_map do (
+        for &cell in List.iter row do (
+            match cell with (
+                | :None => return false
+                | :Some _ => ()
             );
-        ),
+        );
     );
     true
 );
@@ -284,14 +245,13 @@ let check_full = (map :: &SudokuMap) -> Bool => with_return (
     # print_sudoku_map map;
     let to_number = (list :: List.t[Option.t[Int32]]) -> Option.t[Int32] => with_return (
         let mut result = 0;
-        List.iter (
-            &list,
-            &digit => match digit with (
+        for &digit in List.iter &list do (
+            match digit with (
                 | :None => return :None
                 | :Some digit => (
                     result = result * 10 + digit
                 )
-            ),
+            );
         );
         :Some result
     );
@@ -340,7 +300,9 @@ const Part2 = (
         (
             let number = (
                 let mut x = 0;
-                List.iter (&number, &digit => (x = x * 10 + digit));
+                for &digit in List.iter &number do (
+                    x = x * 10 + digit;
+                );
                 x
             );
             (# dbg.print (
@@ -355,33 +317,28 @@ const Part2 = (
         );
         let mut sudoku_map = (
             let mut clone = List.create ();
-            List.iter (
-                sudoku_map,
-                row => (
-                    let mut clone_row = List.create ();
-                    List.iter (row, &cell => List.push_back (&mut clone_row, cell));
-                    List.push_back (&mut clone, clone_row);
-                ),
+            for row in List.iter sudoku_map do (
+                let mut clone_row = List.create ();
+                for &cell in List.iter row do (
+                     List.push_back (&mut clone_row, cell);
+                );
+                List.push_back (&mut clone, clone_row);
             );
             clone
         );
         let mut i, mut j = si, sj;
-        List.iter (
-            &number,
-            &digit => (
-                (List.at_mut (List.at_mut (&mut sudoku_map, i), j))^ = :Some digit;
-                i = (i + di) % n;
-                j = (j + dj) % m;
-            ),
+        for &digit in List.iter &number do (
+            (List.at_mut (List.at_mut (&mut sudoku_map, i), j))^ = :Some digit;
+            i = (i + di) % n;
+            j = (j + dj) % m;
         );
         try_solve &sudoku_map
     );
     let try_fill = (sudoku_map, c :: Char, si, sj, di, dj, .fill) => with_return (
         let number = read_number_from_sudoku_map (sudoku_map, si, sj, di, dj);
         let already_filled = with_return (
-            List.iter (
-                &number,
-                digit => if digit^ is :None then return false,
+            for digit in List.iter &number do (
+                if digit^ is :None then return false;
             );
             true
         );
@@ -447,7 +404,7 @@ const Part2 = (
                             x /= 10;
                         );
                         let mut list = List.create ();
-                        for i in (0 .. List.length &reversed).rev() do (
+                        for i in (0..List.length &reversed).rev () do (
                             List.push_back (&mut list, (List.at (&reversed, i))^);
                         );
                         list
@@ -641,23 +598,17 @@ if part1 then (
     print "Solved!!!";
     print_sudoku_map &solved;
     
-    List.iter (
-        &solved,
-        line => (
-            let mut odd_digits = 0;
-            List.iter (
-                line,
-                &(:Some digit) => (
-                    if digit % 2 == 0 then (
-                        answer += odd_digits;
-                        odd_digits = 0;
-                    ) else (
-                        odd_digits = odd_digits * 10 + digit;
-                    );
-                )
+    for line in List.iter &solved do (
+        let mut odd_digits = 0;
+        for &(:Some digit) in List.iter line do (
+            if digit % 2 == 0 then (
+                answer += odd_digits;
+                odd_digits = 0;
+            ) else (
+                odd_digits = odd_digits * 10 + digit;
             );
-            answer += odd_digits;
-        )
+        );
+        answer += odd_digits;
     );
     
     dbg.print (.answer);

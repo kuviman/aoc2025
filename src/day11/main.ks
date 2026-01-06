@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
@@ -47,24 +47,18 @@ const Graph = (
         Map.get (&g^.vs, id) |> Option.unwrap
     );
     const print = [T] (g :: &t[T]) => (
-        Map.iter (
-            &g^.vs,
-            &(.key = id, .value = v) => (
-                let mut s = id + ": ";
-                let mut first = true;
-                List.iter (
-                    &v.out,
-                    &u => (
-                        if first then (
-                            first = false;
-                        ) else (
-                            s += ", "
-                        );
-                        s += u^.id;
-                    ),
+        for &(.key = id, .value = v) in Map.iter &g^.vs do (
+            let mut s = id + ": ";
+            let mut first = true;
+            for &u in List.iter &v.out do (
+                if first then (
+                    first = false;
+                ) else (
+                    s += ", "
                 );
-                std.io.print s;
-            ),
+                s += u^.id;
+            );
+            std.io.print s;
         );
     );
 );
@@ -97,24 +91,17 @@ let get_or_init_vertex = (name :: String) => (
         ),
     )
 );
-String.lines (
-    input,
-    line => with_return (
-        if String.length line == 0 then return;
-        let v, out = String.split_once (line, ':');
-        let v = get_or_init_vertex v;
-        let v = String.split (
-            out,
-            ' ',
-            u => (
-                let u = String.trim u;
-                if String.length u != 0 then (
-                    let u = get_or_init_vertex u;
-                    List.push_back (&mut v^.out, u);
-                );
-            ),
+for line in String.lines input do (
+    if String.length line == 0 then continue;
+    let v, out = String.split_once (line, ':');
+    let v = get_or_init_vertex v;
+    for u in String.split (out, ' ') do (
+        let u = String.trim u;
+        if String.length u != 0 then (
+            let u = get_or_init_vertex u;
+            List.push_back (&mut v^.out, u);
         );
-    ),
+    );
 );
 
 if verbose then (
@@ -129,11 +116,8 @@ let Part1 = (
         let v_result = &mut v^.data.paths_to_target;
         if v_result^ == -1 then (
             v_result^ = 0;
-            List.iter (
-                &v^.out,
-                &u => (
-                    v_result^ += dp u;
-                ),
+            for &u in List.iter &v^.out do (
+                v_result^ += dp u;
             );
         );
         v_result^
@@ -171,11 +155,8 @@ let Part2 = (
             v_result^ = zero;
             let visited_dac = visited_dac or v^.id == "dac";
             let visited_fft = visited_fft or v^.id == "fft";
-            List.iter (
-                &v^.out,
-                &u => (
-                    v_result^ += dp (u, visited_dac, visited_fft);
-                ),
+            for &u in List.iter &v^.out do (
+                v_result^ += dp (u, visited_dac, visited_fft);
             );
         );
         v_result^

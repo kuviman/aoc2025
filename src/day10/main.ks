@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
@@ -27,45 +27,35 @@ let parse_machine = s -> Machine => (
     let mut target_state = 0;
     let mut buttons = List.create ();
     let mut joltages = List.create ();
-    String.split (
-        s,
-        ' ',
-        part => (
-            let parens = String.at (part, 0);
-            let inside = String.substring (part, 1, String.length part - 2);
-            if parens == '[' then (
-                lights = String.length inside;
-                
-                for i in (0 .. String.length inside).rev() do (
-                    let c = String.at (inside, i);
-                    let c = if c == '#' then 1 else 0;
-                    target_state = std.op.bit_shift_left (target_state, 1) + c;
-                );
-                # print ("[INFO] read target_state=" + to_string target_state);
-            ) else if parens == '(' then (
-                let mut affected_lights = 0;
-                String.split (
-                    inside,
-                    ',',
-                    idx => (
-                        let idx :: Int32 = idx |> parse;
-                        affected_lights = std.op.bit_or (
-                            affected_lights,
-                            std.op.bit_shift_left (1, idx),
-                        );
-                    ),
-                );
-                List.push_back (&mut buttons, affected_lights);
-            ) else if parens == '{' then (
-                String.split (
-                    inside,
-                    ',',
-                    x => List.push_back (&mut joltages, x |> parse),
-                );
-            ) else (
-                panic "unexpected char"
+    for part in String.split (s, ' ') do (
+        let parens = String.at (part, 0);
+        let inside = String.substring (part, 1, String.length part - 2);
+        if parens == '[' then (
+            lights = String.length inside;
+            
+            for i in (0 .. String.length inside).rev() do (
+                let c = String.at (inside, i);
+                let c = if c == '#' then 1 else 0;
+                target_state = std.op.bit_shift_left (target_state, 1) + c;
             );
-        ),
+            # print ("[INFO] read target_state=" + to_string target_state);
+        ) else if parens == '(' then (
+            let mut affected_lights = 0;
+            for idx in String.split (inside, ',') do (
+                let idx :: Int32 = idx |> parse;
+                affected_lights = std.op.bit_or (
+                    affected_lights,
+                    std.op.bit_shift_left (1, idx),
+                );
+            );
+            List.push_back (&mut buttons, affected_lights);
+        ) else if parens == '{' then (
+            for x in String.split (inside, ',') do (
+                List.push_back (&mut joltages, x |> parse),
+            );
+        ) else (
+            panic "unexpected char"
+        );
     );
     (.lights, .target_state, .buttons, .joltages)
 );
@@ -94,19 +84,16 @@ let solve_part1 = (machine :: Machine) => (
         # dbg.print state;
         let state_d = (List.at (&d, state))^;
         let dir = if state_d < 0 then -1 else +1;
-        List.iter (
-            &machine.buttons,
-            &changes => (
-                let new_state = std.op.bit_xor (state, changes);
-                let new_state_d = List.at_mut (&mut d, new_state);
-                if new_state_d^ == 0 then (
-                    new_state_d^ = state_d + dir;
-                    Queue.push (&mut q, new_state);
-                ) else if (new_state_d^ < 0) != (state_d < 0) then (
-                    machine_answer = abs (state_d) + abs (new_state_d^) - 1;
-                    break;
-                );
-            )
+        for &changes in List.iter &machine.buttons do (
+            let new_state = std.op.bit_xor (state, changes);
+            let new_state_d = List.at_mut (&mut d, new_state);
+            if new_state_d^ == 0 then (
+                new_state_d^ = state_d + dir;
+                Queue.push (&mut q, new_state);
+            ) else if (new_state_d^ < 0) != (state_d < 0) then (
+                machine_answer = abs (state_d) + abs (new_state_d^) - 1;
+                break;
+            );
         );
     );
     if machine_answer < 0 then (
@@ -143,18 +130,12 @@ const Matrix = (
     );
     
     const print = (a :: &t) => (
-        List.iter (
-            &a^.rows,
-            row => (
-                let mut s = "";
-                List.iter (
-                    row,
-                    &x => (
-                        s += " " + to_string x;
-                    ),
-                );
-                std.io.print s;
-            )
+        for row in List.iter &a^.rows do (
+            let mut s = "";
+            for &x in List.iter row do (
+                s += " " + to_string x;
+            );
+            std.io.print s;
         );
     );
     
@@ -239,7 +220,9 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
             if (List.at (&lower^, j))^ % at_row != 0 then (
                 # we can't safely divide, so we scale
                 # the whole row up to compensate
-                List.iter_mut (lower, x => (x^ *= at_row));
+                for x in List.iter_mut lower do (
+                    x^ *= at_row;
+                );
             );
             let mult = (List.at (&lower^, j))^ / at_row;
             for k in j..m do (
@@ -355,32 +338,28 @@ let solve_part2 = (machine :: Machine) -> Int32 => with_return (
     let mut a = Matrix.create (n, m);
     (
         let mut i = 0;
-        List.iter (
-            &machine.buttons,
-            &(mut button) => (
-                for j in 0..n do (
-                    if std.op.bit_and (button, 1) != 0 then (
-                        (Matrix.at_mut (&mut a, j, i))^ = 1;
-                    );
-                    button = std.op.bit_shift_right (button, 1);
+        for &(mut button) in List.iter &machine.buttons do (
+            for j in 0..n do (
+                if std.op.bit_and (button, 1) != 0 then (
+                    (Matrix.at_mut (&mut a, j, i))^ = 1;
                 );
-                i += 1;
-            ),
+                button = std.op.bit_shift_right (button, 1);
+            );
+            i += 1;
         );
         let mut i = 0;
-        List.iter (
-            &machine.joltages,
-            &x => (
-                (Matrix.at_mut (&mut a, i, m - 1))^ = x;
-                i += 1;
-            ),
+        for &x in List.iter &machine.joltages do (
+            (Matrix.at_mut (&mut a, i, m - 1))^ = x;
+            i += 1;
         );
     );
     
     let (.free, .pivot) = gauss_elimination (&mut a);
     
     let mut max_joltage = 0;
-    List.iter (&machine.joltages, &x => (max_joltage = max (max_joltage, x)));
+    for &x in List.iter &machine.joltages do (
+        max_joltage = max (max_joltage, x);
+    );
     print ("max_joltage = " + to_string max_joltage);
     let combinations = pow (max_joltage, List.length &free);
     max_combinations = max (max_combinations, combinations);
@@ -409,30 +388,24 @@ let mut max_joltages = 0;
 let mut max_joltage = 0;
 let mut idx = 0;
 let mut answer = 0;
-String.lines (
-    input,
-    line => with_return (
-        if String.length line == 0 then return;
-        let machine = parse_machine line;
-        
-        max_buttons = max (max_buttons, List.length &machine.buttons);
-        max_joltages = max (max_joltages, List.length &machine.joltages);
-        List.iter (
-            &machine.joltages,
-            &x => (
-                max_joltage = max (max_joltage, x);
-            ),
-        );
-        
-        idx += 1;
-        print ("[INFO] read machine #" + to_string idx);
-        
-        if part1 then (
-            answer += solve_part1 machine;
-        ) else (
-            answer += solve_part2 machine;
-        );
-    ),
+for line in String.lines input do (
+    if String.length line == 0 then continue;
+    let machine = parse_machine line;
+    
+    max_buttons = max (max_buttons, List.length &machine.buttons);
+    max_joltages = max (max_joltages, List.length &machine.joltages);
+    for &x in List.iter &machine.joltages do (
+        max_joltage = max (max_joltage, x);
+    );
+    
+    idx += 1;
+    print ("[INFO] read machine #" + to_string idx);
+    
+    if part1 then (
+        answer += solve_part1 machine;
+    ) else (
+        answer += solve_part2 machine;
+    );
 );
 dbg.print (.max_buttons, .max_joltages, .max_joltage, .max_combinations);
 dbg.print answer;

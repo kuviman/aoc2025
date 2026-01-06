@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
@@ -10,13 +10,10 @@ impl syntax (value as_Int64) = `(
 
 let mut map = List.create ();
 
-String.lines (
-    input,
-    line => (
-        if String.length line != 0 then (
-            List.push_back (&mut map, line);
-        );
-    ),
+for line in String.lines input do (
+    if String.length line != 0 then (
+        List.push_back (&mut map, line);
+    );
 );
 let first_line = List.at (&map, 0);
 let n = List.length &map;

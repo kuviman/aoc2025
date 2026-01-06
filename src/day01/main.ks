@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 const Direction = type (
     | :Left
@@ -35,20 +35,16 @@ let parse_instruction = s -> Instruction => (
 let read_input = () -> Input => (
     let input = std.fs.read_file input_path;
     let mut result = List.create ();
-    let mut line_idx = 0;
-    String.lines (
-        input,
-        line => (
-            if line != "" then (
-                std.dbg.print line_idx;
-                line_idx += 1;
-                # std.dbg.print line;
-                List.push_back (
-                    &mut result,
-                    parse_instruction line,
-                );
-            );
-        )
+    let mut line_idx :: Int32 = 0;
+    for line in String.lines input do (
+        if line == "" then continue;
+        std.dbg.print line_idx;
+        line_idx += 1;
+        # std.dbg.print line;
+        List.push_back (
+            &mut result,
+            parse_instruction line,
+        );
     );
     result
 );
@@ -80,17 +76,14 @@ let rotate = (delta) => (
     );
     current_position
 );
-List.iter (
-    &input,
-    &instruction => (
-        rotate <| instruction_delta instruction;
-        # std.dbg.print current_position;
-        if part1 then (
-            if current_position == 0 then (
-                answer += 1;
-            );
+for &instruction in List.iter &input do (
+    rotate <| instruction_delta instruction;
+    # std.dbg.print current_position;
+    if part1 then (
+        if current_position == 0 then (
+            answer += 1;
         );
-    ),
+    );
 );
 std.dbg.print answer;
 

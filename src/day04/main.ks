@@ -1,25 +1,19 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
 use std.collections.Queue;
 
 let mut map = List.create ();
-String.lines (
-    input,
-    line => (
-        if String.length line != 0 then (
-            let mut chars = List.create ();
-            String.iter (
-                line,
-                c => (
-                    List.push_back (&mut chars, c);
-                )
-            );
-            List.push_back (&mut map, chars);
+for line in String.lines input do (
+    if String.length line != 0 then (
+        let mut chars = List.create ();
+        for c in String.iter line do (
+            List.push_back (&mut chars, c);
         );
-    )
+        List.push_back (&mut map, chars);
+    );
 );
 
 let at_mut = (i, j) -> &mut Char => (

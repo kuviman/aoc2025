@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use (include "../common.ks").*;
+include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
@@ -19,17 +19,14 @@ const Coords = type (
 );
 
 let mut tiles :: List.t[Coords] = List.create ();
-String.lines (
-    input,
-    line => (
-        if String.length line != 0 then (
-            let x, y = String.split_once (line, ',');
-            let x = x |> parse;
-            let y = y |> parse;
-            let coords :: Coords = (.x, .y);
-            List.push_back (&mut tiles, coords);
-        );
-    ),
+for line in String.lines input do (
+    if String.length line != 0 then (
+        let x, y = String.split_once (line, ',');
+        let x = x |> parse;
+        let y = y |> parse;
+        let coords :: Coords = (.x, .y);
+        List.push_back (&mut tiles, coords);
+    );
 );
 
 print "[INFO] coords read";
@@ -123,23 +120,20 @@ let answer = if part1 then (
         # print "===";
     );
     let mut i = 0;
-    List.iter (
-        &tiles,
-        &(.x, .y) => (
-            print (
-                "[INFO] compressing coords "
-                + (to_string i)
-                + "/"
-                + (to_string <| List.length &tiles)
-            );
-            add (&mut xs, x - one);
-            add (&mut xs, x);
-            add (&mut xs, x + one);
-            add (&mut ys, y - one);
-            add (&mut ys, y);
-            add (&mut ys, y + one);
-            i += 1;
-        ),
+    for &(.x, .y) in List.iter &tiles do (
+        print (
+            "[INFO] compressing coords "
+            + (to_string i)
+            + "/"
+            + (to_string <| List.length &tiles)
+        );
+        add (&mut xs, x - one);
+        add (&mut xs, x);
+        add (&mut xs, x + one);
+        add (&mut ys, y - one);
+        add (&mut ys, y);
+        add (&mut ys, y + one);
+        i += 1;
     );
     print (
         "[INFO] coords are compressed xs="
@@ -149,13 +143,10 @@ let answer = if part1 then (
     );
     
     let mut vs = List.create ();
-    List.iter (
-        &tiles,
-        &(.x, .y) => (
-            let x = idx_of (&xs, x);
-            let y = idx_of (&ys, y);
-            List.push_back (&mut vs, (.x, .y));
-        ),
+    for &(.x, .y) in List.iter &tiles do (
+        let x = idx_of (&xs, x);
+        let y = idx_of (&ys, y);
+        List.push_back (&mut vs, (.x, .y));
     );
     if verbose then (
         print (
@@ -261,11 +252,8 @@ let answer = if part1 then (
         );
     );
     const ACTUAL_CORNER = 100;
-    List.iter (
-        &vs,
-        &(.x, .y) => (
-            (Map.at_mut (&mut map, x, y))^ = ACTUAL_CORNER;
-        ),
+    for &(.x, .y) in List.iter &vs do (
+        (Map.at_mut (&mut map, x, y))^ = ACTUAL_CORNER;
     );
     print "[INFO] done filling the map";
     
