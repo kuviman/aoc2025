@@ -78,21 +78,26 @@ let solve_part1 = (machine :: Machine) => (
     (List.at_mut (&mut d, machine.target_state))^ = -1;
     Queue.push (&mut q, machine.target_state);
     let mut machine_answer = -1;
-    while Queue.length &q != 0 do (
-        let state = Queue.pop &mut q;
-        # if state == machine.target_state then break;
-        # dbg.print state;
-        let state_d = (List.at (&d, state))^;
-        let dir = if state_d < 0 then -1 else +1;
-        for &changes in List.iter &machine.buttons do (
-            let new_state = std.op.bit_xor (state, changes);
-            let new_state_d = List.at_mut (&mut d, new_state);
-            if new_state_d^ == 0 then (
-                new_state_d^ = state_d + dir;
-                Queue.push (&mut q, new_state);
-            ) else if (new_state_d^ < 0) != (state_d < 0) then (
-                machine_answer = abs (state_d) + abs (new_state_d^) - 1;
-                break;
+    unwindable bfs (
+        while Queue.length &q != 0 do (
+            dbg.print (.before_pop = Queue.length &q);
+            let state = Queue.pop &mut q;
+            dbg.print (.after_pop = Queue.length &q);
+            # if state == machine.target_state then break;
+            # dbg.print (.q, .state);
+            let state_d = (List.at (&d, state))^;
+            let dir = if state_d < 0 then -1 else +1;
+            for (i, &changes) in List.iter &machine.buttons |> std.iter.enumerate do (
+                let new_state = std.op.bit_xor (state, changes);
+                let new_state_d = List.at_mut (&mut d, new_state);
+                if new_state_d^ == 0 then (
+                    # dbg.print (.state, .dir, .new_state, .button = i, .changes);
+                    new_state_d^ = state_d + dir;
+                    Queue.push (&mut q, new_state);
+                ) else if (new_state_d^ < 0) != (state_d < 0) then (
+                    machine_answer = abs (state_d) + abs (new_state_d^) - 1;
+                    unwind bfs ();
+                );
             );
         );
     );
@@ -321,7 +326,8 @@ let mut brute = (
         ) else (
             for x in 0..max + 1 do (
                 # print ("BRUTE " + to_string i + " = " + to_string x);
-                (List.at_mut (&mut vars, (List.at (&free, i))^))^ = x;
+                let free_var_idx = (List.at (&free, i))^;
+                (List.at_mut (&mut vars, free_var_idx))^ = x;
                 current_answer += x;
                 force (i - 1, .max = max - x);
                 current_answer -= x;
@@ -401,11 +407,14 @@ for line in String.lines input do (
     idx += 1;
     print ("[INFO] read machine #" + to_string idx);
     
-    if part1 then (
-        answer += solve_part1 machine;
+    let machine_answer = if part1 then (
+        solve_part1 machine
     ) else (
-        answer += solve_part2 machine;
+        solve_part2 machine
     );
+    dbg.print (.idx, .machine_answer);
+    print ("[INFO] machine answer #" + to_string idx + " = " + to_string machine_answer);
+    answer += machine_answer;
 );
 dbg.print (.max_buttons, .max_joltages, .max_joltage, .max_combinations);
 dbg.print answer;

@@ -320,7 +320,7 @@ const Part2 = (
             for row in List.iter sudoku_map do (
                 let mut clone_row = List.create ();
                 for &cell in List.iter row do (
-                     List.push_back (&mut clone_row, cell);
+                    List.push_back (&mut clone_row, cell);
                 );
                 List.push_back (&mut clone, clone_row);
             );
@@ -454,16 +454,22 @@ const Part2 = (
         );
     );
     
-    const current_solvable = @context type (.found_solution :: SudokuMap -> ());
+    const current_solvable = @context type (
+        .found_solution :: SudokuMap -> (),
+    );
     
     const Visited = (
         module:
         
         use std.collections.Treap;
         
-        const t = newtype (.inner :: Treap.t[type (&SudokuMap)]);
+        const t = newtype (
+            .inner :: Treap.t[type (&SudokuMap)],
+        );
         
-        const create = () -> t => (.inner = Treap.create ());
+        const create = () -> t => (
+            .inner = :Empty, # Treap.create (),
+        );
         
         const Ord = newtype (
             | :Less

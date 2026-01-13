@@ -22,6 +22,7 @@
             '')
             rlwrap
             nixfmt-classic
+            nodejs
           ];
         };
       });

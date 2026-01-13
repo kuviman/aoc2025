@@ -2,10 +2,8 @@ use std.prelude.*;
 let mut part1 = true;
 let mut input_path = "example.txt";
 (
-    dbg.print (.argc = std.sys.argc ());
     for i in 1..std.sys.argc () do (
         let arg = std.sys.argv_at i;
-        dbg.print (.arg);
         if arg == "--part2" then (
             part1 = false;
         ) else if arg == "--part1" then (

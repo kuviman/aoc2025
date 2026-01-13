@@ -39,7 +39,6 @@ for line in String.lines input do (
 
 print "[INFO] Input read";
 
-# List.iter (&points, &point => dbg.print point);
 let pairs_to_connect = if input_path == "example.txt" then 10 else 1000;
 
 let n = List.length &points;
@@ -195,11 +194,16 @@ const DSU = (
 
 let mut nodes = List.create ();
 for i in 0..n do (
-    List.push_back (&mut nodes, DSU.new_node ())
+    List.push_back (&mut nodes, DSU.new_node ());
 );
+
+# for &point in List.iter &points do (
+#     dbg.print point;
+# );
 
 let mut answer_part2 = 0 |> as_Int64;
 for &(i, j, .sqr_d) in PairSet.iter &pairs do (
+    # dbg.print (.points = points.inner, .i);
     let a = List.at (&points, i);
     let b = List.at (&points, j);
     # dbg.print ("merge", a^, b^);
