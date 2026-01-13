@@ -5,7 +5,7 @@ let input = std.fs.read_file input_path;
 
 use std.collections.Queue;
 
-@syntax "as_int64" 62 wrap never = value " " "as_int64";
+@syntax "as_int64" 62 @wrap never = value " " "as_int64";
 impl syntax (value as_int64) = `(
     parse (to_string $value)
 );

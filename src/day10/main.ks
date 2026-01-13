@@ -3,7 +3,7 @@ include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-@syntax "for_range_rev" 7.5 wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
+@syntax "for_range_rev" 7.5 @wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
 impl syntax (for i in (start .. end).rev() do body) = `(
     let mut _loop_var = $end;
     while _loop_var > $start do (

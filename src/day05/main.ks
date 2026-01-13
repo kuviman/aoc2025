@@ -3,7 +3,7 @@ include "../common.ks";
 std.sys.chdir (std.path.dirname __FILE__);
 let input = std.fs.read_file input_path;
 
-@syntax "as_Int64" 62 wrap never = value " " "as_Int64";
+@syntax "as_Int64" 62 @wrap never = value " " "as_Int64";
 impl syntax (value as_Int64) = `(
     parse (to_string $value)
 );
