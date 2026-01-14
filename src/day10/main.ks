@@ -3,15 +3,6 @@ include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
 let input = std.fs.read_file(input_path);
 
-@syntax "for_range_rev" 7.5 @wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
-impl syntax (for i in (start .. end).rev() do body) = `(
-    let mut _loop_var = $end;
-    while _loop_var > $start do (
-        _loop_var -= 1;
-        let $i = _loop_var;
-        $body;
-    )
-);
 let verbose = false;
 const State = Int32;
 const Machine = type (
@@ -33,7 +24,7 @@ let parse_machine = s -> Machine => (
         (
             lights = String.length(inside);
             
-            for i in (0 .. String.length(inside)).rev() do (
+            for i in (0..String.length(inside)).rev() do (
                 let c = String.at(inside, i);
                 let c = if c == '#' then 1 else 0;
                 target_state = std.op.bit_shift_left(target_state, 1) + c;
@@ -54,7 +45,6 @@ let parse_machine = s -> Machine => (
                 List.push_back(&mut joltages, x |> parse),
             );
         ) else (
-            
             panic("unexpected char")
         );
     );
