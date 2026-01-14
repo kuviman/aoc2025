@@ -1,8 +1,12 @@
 #!/usr/bin/env kast
 use std.prelude.*;
-
 std.sys.chdir(std.path.dirname(__FILE__));
-let mut only_day = :None;
+
+const Problem = newtype (
+    | :Day(Int32)
+    | :liquidcake1
+);
+let mut only :: Option.t[Problem] = :None;
 let mut only_example = false;
 let mut with_javascript = true;
 for i in 1..std.sys.argc() do (
@@ -11,29 +15,34 @@ for i in 1..std.sys.argc() do (
         only_example = true;
     ) else if arg == "--no-js" then (
         with_javascript = false;
+    ) else if arg == "liquidcake1" then (
+        only = :Some(:liquidcake1);
     ) else (
-        only_day = :Some(String.parse(arg))
-    )
+        only = :Some(:Day(String.parse(arg)));
+    );
 );
-for day in 1..13 do (
-    match only_day with (
-        | :Some(only_day) => (
-            if day != only_day then continue;
+let test = (problem :: Problem) => with_return (
+    if only is :Some(only) then (
+        if problem != only then return;
+    );
+    let name = match problem with (
+        | :Day(day) => (
+            let mut name = "day";
+            if day < 10 then (
+                name += "0";
+            );
+            name += to_string(day);
+            name
         )
-        | :None => ()
+        | :liquidcake1 => "liquidcake1"
     );
-    let mut path = "./src/day";
-    if day < 10 then (
-        path += "0";
-    );
-    
-    path += to_string(day);
-    path += "/main.ks";
+    print("Testing " + name);
+    let path = "src/" + name + "/main.ks";
     let test = (part :: Int32, mut file) => with_return (
-        if day == 12 then (
+        if problem == :Day(12) then (
             if not (part == 1 and file == "input.txt") then return;
         );
-        if day == 11 and part == 2 and file == "example.txt" then (
+        if problem == :Day(11) and part == 2 and file == "example.txt" then (
             file = "example.part2.txt";
         );
         let with_javascript = if with_javascript then "--target javascript " else "";
@@ -58,3 +67,8 @@ for day in 1..13 do (
         test(2, "input.txt");
     );
 );
+
+for day in 1..13 do (
+    test(:Day(day))
+);
+test(:liquidcake1);
