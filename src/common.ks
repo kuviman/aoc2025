@@ -2,25 +2,24 @@ use std.prelude.*;
 let mut part1 = true;
 let mut input_path = "example.txt";
 (
-    for i in 1..std.sys.argc () do (
-        let arg = std.sys.argv_at i;
+    for i in 1..std.sys.argc() do (
+        let arg = std.sys.argv_at(i);
         if arg == "--part2" then (
             part1 = false;
         ) else if arg == "--part1" then (
             part1 = true;
         ) else (
+            
             input_path = arg;
         );
     );
 );
 let part2 = not part1;
-
 let assert = x => (
     if not x then (
-        panic "assertion failed";
+        panic("assertion failed");
     );
 );
-
 let assert_answers = (
     answer,
     .example :: (.part1 :: _, .part2 :: _),
@@ -35,15 +34,15 @@ let assert_answers = (
     );
     let expected = if part1 then expected.part1 else expected.part2;
     if answer != expected then (
-        print (
+        print(
             "Expected "
-            + to_string expected
+            + to_string(expected)
             + ", got "
-            + to_string answer
+            + to_string(answer)
         );
-        print (input_path + " " + (if part1 then "part1" else "part2"));
-        std.sys.exit (-1);
+        
+        print(input_path + " " + (if part1 then "part1" else "part2"));
+        std.sys.exit(-1);
     );
 );
-
 use String.parse;

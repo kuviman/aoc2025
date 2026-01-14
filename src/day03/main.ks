@@ -1,49 +1,46 @@
 #!/usr/bin/env kast
 include "../common.ks";
-std.sys.chdir (std.path.dirname __FILE__);
-let input = std.fs.read_file input_path;
-
+std.sys.chdir(std.path.dirname(__FILE__));
+let input = std.fs.read_file(input_path);
 use std.collections.Queue;
 
 @syntax "as_int64" 62 @wrap never = value " " "as_int64";
 impl syntax (value as_int64) = `(
-    parse (to_string $value)
+    parse(to_string($value))
 );
-
 let k = if part1 then 2 else 12;
 
 # let f = () => (
 # List |> map (x => if x < 0 then return :Error)
 # );
 let mut answer :: Int64 = 0 as_int64;
-for line in String.lines (input) do (
-    let n = String.length line;
+for line in String.lines(input) do (
+    let n = String.length(line);
     if n == 0 then continue;
     
-    dbg.print line;
-    
+    dbg.print(line);
     let mut line_answer = 0 as_int64;
-    
     let data = (
         let mut current_start = 0;
         let mut current_end = 0;
-        let mut positions_by_digit = List.create[Queue.t[Int32]] ();
+        let mut positions_by_digit = List.create[Queue.t[Int32]]();
         for _ in 0..10 do (
-            List.push_back (
+            List.push_back(
                 &mut positions_by_digit,
-                Queue.create (),
+                Queue.create(),
             );
         );
         let move_start_to = i => (
             while current_start < i do (
                 let pos = current_start;
-                let digit = String.at (line, pos)
+                let digit = String.at(line, pos)
                     |> Char.to_digit;
-                let positions = List.at_mut (&mut positions_by_digit, digit);
-                let first = Queue.pop positions;
+                let positions = List.at_mut(&mut positions_by_digit, digit);
+                let first = Queue.pop(positions);
                 if first != pos then (
-                    panic "bug";
+                    panic("bug");
                 );
+                
                 # dbg.print ("pop", digit, pos);
                 # Queue.iter (List.at (positions_by_digit, digit), dbg.print[_]);
                 current_start += 1;
@@ -52,13 +49,14 @@ for line in String.lines (input) do (
         let move_end_to = i => (
             while current_end < i do (
                 let pos = current_end;
-                let digit = String.at (line, pos)
+                let digit = String.at(line, pos)
                     |> Char.to_digit;
-                let positions = List.at_mut (&mut positions_by_digit, digit);
-                Queue.push (
+                let positions = List.at_mut(&mut positions_by_digit, digit);
+                Queue.push(
                     positions,
                     pos,
                 );
+                
                 # dbg.print ("push", digit, pos);
                 # Queue.iter (List.at (positions_by_digit, digit), dbg.print[_]);
                 current_end += 1;
@@ -67,16 +65,18 @@ for line in String.lines (input) do (
         let max_in_range = () -> (.index :: Int32, .value :: Int32) => with_return (
             let mut digit = 9;
             while digit >= 0 do (
-                let positions = List.at (&positions_by_digit, digit);
-                if Queue.length positions != 0 then (
+                let positions = List.at(&positions_by_digit, digit);
+                if Queue.length(positions) != 0 then (
                     return (
-                        .index = (Queue.front positions)^,
+                        .index = (Queue.front(positions))^,
                         .value = digit,
                     );
                 );
+                
                 digit -= 1;
             );
-            panic "nothing found"
+            
+            panic("nothing found")
         );
         (
             .move_start_to,
@@ -84,25 +84,25 @@ for line in String.lines (input) do (
             .max_in_range,
         )
     );
-    
     for i in 0..k do (
-        data.move_end_to (n - k + i + 1);
+        data.move_end_to(n - k + i + 1);
         let (
             .index = new_start,
             .value = next_digit,
-        ) = data.max_in_range ();
-        data.move_start_to (new_start + 1);
+        ) = data.max_in_range();
+        data.move_start_to(new_start + 1);
         line_answer = line_answer * 10 as_int64 + next_digit as_int64;
     );
     
-    dbg.print line_answer;
+    dbg.print(line_answer);
     answer += line_answer;
 );
-dbg.print answer;
 
-assert_answers (
+dbg.print(answer);
+
+assert_answers(
     answer,
-    .example = (.part1 = parse "357", .part2 = parse "3121910778619"),
-    .part1 = parse "17144",
-    .part2 = parse "170371185255900",
+    .example = (.part1 = parse("357"), .part2 = parse("3121910778619")),
+    .part1 = parse("17144"),
+    .part2 = parse("170371185255900"),
 );
