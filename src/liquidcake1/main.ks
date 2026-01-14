@@ -68,7 +68,7 @@ let parse_letter_rule = line => (
         panic <| "how to parse rule: " + rule
     );
     
-    # dbg.print (.c, .rule);
+    dbg.print(.c, .rule);
     Map.add(&mut letter_rules, c, rule);
 );
 for line in String.lines(input) do (
@@ -196,7 +196,7 @@ let check = (c :: Char, number :: Option.t[Int32]) -> Bool => with_return (
                 let mut b = 0;
                 while a > 0 do (
                     b = b * 10 + a % 10;
-                    a += 10;
+                    a /= 10;
                 );
                 
                 b
@@ -208,7 +208,7 @@ let check = (c :: Char, number :: Option.t[Int32]) -> Bool => with_return (
             let mut number = number;
             while number > 1 do (
                 if number % x != 0 then return false;
-                number += x;
+                number /= x;
             );
             true
         )
@@ -217,7 +217,7 @@ let check = (c :: Char, number :: Option.t[Int32]) -> Bool => with_return (
             loop (
                 let mut test_to_power = 1;
                 for _ in 0..x do (
-                    test_to_power += test;
+                    test_to_power *= test;
                 );
                 if test_to_power == number then return true;
                 if test_to_power > number then break;
@@ -234,7 +234,7 @@ let check = (c :: Char, number :: Option.t[Int32]) -> Bool => with_return (
     rule_passes
 );
 let check_full = (map :: &SudokuMap) -> Bool => with_return (
-    # print_sudoku_map map;
+    # print_sudoku_map(map);
     let to_number = (list :: List.t[Option.t[Int32]]) -> Option.t[Int32] => with_return (
         let mut result = 0;
         for &digit in List.iter(&list) do (
@@ -273,7 +273,9 @@ let check_full = (map :: &SudokuMap) -> Bool => with_return (
 for i in 0..n do (
     for j in 0..m do (
         let c = String.at((List.at(&letter_map, i))^, j);
-        if c == '.' then continue;
+        if c == '.' then (
+            continue;
+        );
         if check(c, read_number_from_digit_map(i, j, 0, 1)) and part2 then (
             write_number_from_digit_map(i, j, 0, 1);
         );
@@ -304,7 +306,7 @@ const Part2 = (
                 .dj,
                 .filled = filled_number
             ); #)
-            print("Try filling " + (@native "to_string")(c) + " with " + to_string(number));
+            print("Try filling " + to_string(c) + " with " + to_string(number));
         );
         let mut sudoku_map = (
             let mut clone = List.create();
@@ -341,7 +343,7 @@ const Part2 = (
         let min, max = (
             let mut min = 1;
             for _ in 1..List.length(&number) do (
-                min += 10;
+                min *= 10;
             );
             
             min, min * 10 - 1
@@ -401,7 +403,7 @@ const Part2 = (
                         let mut x = x;
                         while x != 0 do (
                             List.push_back(&mut reversed, x % 10);
-                            x += 10;
+                            x /= 10;
                         );
                         let mut list = List.create();
                         for i in (0..List.length(&reversed)).rev() do (
@@ -418,7 +420,7 @@ const Part2 = (
                         let pow = x => (
                             let mut result = 1;
                             for _ in 0..power do (
-                                result += x;
+                                result *= x;
                             );
                             
                             result
@@ -445,11 +447,11 @@ const Part2 = (
                     | :PowerOf(base) => with_return (
                         let mut x = 1;
                         while x < min do (
-                            x += base;
+                            x *= base;
                         );
                         while x <= max do (
                             try(x);
-                            x += base;
+                            x *= base;
                         );
                     )
                 );
@@ -540,10 +542,9 @@ const Part2 = (
                     if called is :Some(_) then unwind check ();
                     called = :Some(args);
                 );
-                
                 try_fill(sudoku_map, c, i, j, di, dj, .fill = f);
                 if called is :Some(args) then (
-                    # print "obvious";
+                    print("obvious");
                     fill(args);
                     return true;
                 );
@@ -569,7 +570,7 @@ const Part2 = (
         print("trying to solve");
         print_sudoku_map(sudoku_map);
         if not fill_obvious(sudoku_map) then (
-            # print "Trying brute";
+            print("Trying brute");
             for i in 0..n do (
                 for j in 0..m do (
                     let c = String.at((List.at(&letter_map, i))^, j);
@@ -612,4 +613,10 @@ if part1 then (
     );
     
     dbg.print(.answer);
+);
+assert_answers(
+    answer,
+    .example = (.part1 = 12251, .part2 = 2279),
+    .part1 = parse("1401106"),
+    .part2 = parse("517533251"),
 );
