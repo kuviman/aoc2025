@@ -5,12 +5,12 @@ let input = std.fs.read_file(input_path);
 
 let verbose = false;
 const State = Int32;
-const Machine = type (
+const Machine = newtype {
     .lights :: Int32,
     .target_state :: State,
     .buttons :: List.t[State],
     .joltages :: List.t[Int32],
-);
+};
 let parse_machine = s -> Machine => (
     let mut lights = 0;
     let mut target_state = 0;
@@ -42,18 +42,18 @@ let parse_machine = s -> Machine => (
             List.push_back(&mut buttons, affected_lights);
         ) else if parens == '{' then (
             for x in String.split(inside, ',') do (
-                List.push_back(&mut joltages, x |> parse),
+                List.push_back(&mut joltages, x |> parse);
             );
         ) else (
             panic("unexpected char")
         );
     );
-    (
+    {
         .lights,
         .target_state,
         .buttons,
         .joltages
-    )
+    }
 );
 let abs = x => if x < 0 then -x else x;
 let max = (a, b) => if a > b then a else b;
@@ -74,14 +74,14 @@ let solve_part1 = (machine :: Machine) => (
     let mut machine_answer = -1;
     unwindable bfs (
         while Queue.length(&q) != 0 do (
-            dbg.print(.before_pop = Queue.length(&q));
+            dbg.print({ .before_pop = Queue.length(&q) });
             let state = Queue.pop(&mut q);
-            dbg.print(.after_pop = Queue.length(&q));
+            dbg.print({ .after_pop = Queue.length(&q) });
             # if state == machine.target_state then break;
             # dbg.print (.q, .state);
             let state_d = (List.at(&d, state))^;
             let dir = if state_d < 0 then -1 else +1;
-            for (i, &changes) in List.iter(&machine.buttons) |> std.iter.enumerate do (
+            for { i, &changes } in List.iter(&machine.buttons) |> std.iter.enumerate do (
                 let new_state = std.op.bit_xor(state, changes);
                 let new_state_d = List.at_mut(&mut d, new_state);
                 if new_state_d^ == 0 then (
@@ -103,7 +103,7 @@ let solve_part1 = (machine :: Machine) => (
 );
 const Matrix = (
     module:
-    const t = type (.rows :: List.t[List.t[Int32]]);
+    const t = newtype { .rows :: List.t[List.t[Int32]] };
     const create = (n, m) -> t => (
         let mut rows = List.create();
         for _ in 0..n do (
@@ -114,9 +114,7 @@ const Matrix = (
             
             List.push_back(&mut rows, row);
         );
-        (
-            .rows
-        )
+        { .rows }
     );
     const at_mut = (a :: &mut t, i :: Int32, j :: Int32) -> &mut Int32 => (
         List.at_mut(List.at_mut(&mut a^.rows, i), j)
@@ -137,13 +135,13 @@ const Matrix = (
             std.io.print(s);
         );
     );
-    const size = (a :: &t) -> (Int32, Int32) => (
+    const size = (a :: &t) -> { Int32, Int32 } => {
         List.length(&a^.rows),
         List.length(List.at(&a^.rows, 0))
-    );
+    };
 );
 let swap = [T] (a :: &mut T, b :: &mut T) => (
-    a^, b^ = b^, a^;
+    { a^, b^ } = { b^, a^ };
 );
 
 # const gcd = (a :: Int32, b :: Int32) -> (Int32, .ma :: Int32, .mb :: Int32) => (
@@ -186,8 +184,8 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
         print("[INFO] before gauss");
         Matrix.print(&a^);
     );
-    let n, m = Matrix.size(&a^);
-    let mut i, mut j = 0, 0;
+    let { n, m } = Matrix.size(&a^);
+    let { mut i, mut j } = { 0, 0 };
     let mut free = List.create();
     let mut pivot = List.create();
     loop (
@@ -207,7 +205,7 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
             continue;
         );
         if j + 1 < m then (
-            List.push_back(&mut pivot, (.row = i, .var = j));
+            List.push_back(&mut pivot, { .row = i, .var = j });
         );
         let row = Matrix.row_mut(a, i);
         swap(row, Matrix.row_mut(a, non_zero_row));
@@ -242,10 +240,10 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
     );
     
     print("free vars = " + std.collections.Treap.to_string(&free.inner, &x => to_string(x)));
-    (
+    {
         .free,
-        .pivot
-    )
+        .pivot,
+    }
 );
 let pow = (x, n) => (
     let mut result = 1;
@@ -260,7 +258,7 @@ const Treap = (
     const iter_rev = [T] (a :: std.collections.Treap.t[T], f) => (
         match a with (
             | :Empty => ()
-            | :Node(node) => (
+            | :Node (node) => (
                 iter_rev(node.right, f);
                 f(&node.value);
                 iter_rev(node.left, f);
@@ -292,7 +290,7 @@ let mut brute = (
         # print "pivot:";
         Treap.iter_rev(
             pivot.inner,
-            &(.var, .row) => (
+            &{ .var, .row } => (
                 let row = Matrix.row_mut(&mut a, row);
                 let mut result = (List.at(&row^, m - 1))^;
                 for j in var + 1..m - 1 do (
@@ -356,10 +354,7 @@ let solve_part2 = (machine :: Machine) -> Int32 => with_return (
             i += 1;
         );
     );
-    let (
-        .free,
-        .pivot
-    ) = gauss_elimination(&mut a);
+    let { .free, .pivot } = gauss_elimination(&mut a);
     let mut max_joltage = 0;
     for &x in List.iter(&machine.joltages) do (
         max_joltage = max(max_joltage, x);
@@ -410,16 +405,16 @@ for line in String.lines(input) do (
         solve_part2(machine)
     );
     
-    dbg.print(.idx, .machine_answer);
+    dbg.print({ .idx, .machine_answer });
     print("[INFO] machine answer #" + to_string(idx) + " = " + to_string(machine_answer));
     answer += machine_answer;
 );
 
-dbg.print(.max_buttons, .max_joltages, .max_joltage, .max_combinations);
+dbg.print({ .max_buttons, .max_joltages, .max_joltage, .max_combinations });
 dbg.print(answer);
 assert_answers(
     answer,
-    .example = (.part1 = 7, .part2 = 33),
+    .example = { .part1 = 7, .part2 = 33 },
     .part1 = 527,
     .part2 = 19810,
 );

@@ -22,10 +22,10 @@ let input = std.fs.read_file(input_path);
 # TODO lang
 let mut answer :: Int64 = "0" |> parse;
 for range in String.split(input, ',') do (
-    let start, end = String.split_once(range, '-');
+    let { start, end } = String.split_once(range, '-');
     let start = start |> String.trim |> parse;
     let end = end |> String.trim |> parse;
-    dbg.print(start, end, end - start);
+    dbg.print({ start, end, end - start });
     let max_times = if part1 then (
         2
     ) else (
@@ -45,13 +45,11 @@ for range in String.split(input, ',') do (
                 s += "0";
                 len -= 1;
             );
-            
             s |> parse
         );
         
         # dbg.print x;
         # TODO lang
-        let one = "1" |> parse;
         loop (
             let x_s = to_string(x);
             let mut combined_s = "";
@@ -65,8 +63,7 @@ for range in String.split(input, ',') do (
                 dbg.print(combined);
                 answer += combined;
             );
-            
-            x += one;
+            x += 1;
         );
     );
 );
@@ -75,7 +72,7 @@ dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = parse("1227775554"), .part2 = parse("4174379265")),
+    .example = { .part1 = parse("1227775554"), .part2 = parse("4174379265") },
     .part1 = parse("22062284697"),
     .part2 = parse("46666175279"),
 );

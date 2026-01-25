@@ -18,7 +18,7 @@ let n = List.length(&map);
 let m = String.length((List.at(&map, 0))^);
 let answer :: Int64 = unwindable block (
     if part1 then (
-        let mut answer = 0 as_Int64;
+        let mut answer = 0;
         let mut current_beams = List.create();
         for i in 0..m do (
             List.push_back(&mut current_beams, String.at(first_line^, i) == 'S');
@@ -33,7 +33,7 @@ let answer :: Int64 = unwindable block (
                     let line_below = List.at(&map, i + 1);
                     let char_below = String.at(line_below^, j);
                     if char_below == '^' then (
-                        answer += 1 as_Int64;
+                        answer += 1;
                         (List.at_mut(&mut next_beams, j - 1))^ = true;
                         (List.at_mut(&mut next_beams, j + 1))^ = true;
                     ) else (
@@ -50,7 +50,7 @@ let answer :: Int64 = unwindable block (
     ) else (
         let mut next_row_answers = List.create();
         for _ in 0..m do (
-            List.push_back(&mut next_row_answers, 0 as_Int64);
+            List.push_back(&mut next_row_answers, 0);
         );
         
         @syntax "for_range_rev" 7.5 @wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
@@ -67,12 +67,12 @@ let answer :: Int64 = unwindable block (
             # dbg.print "inside loop";
             let mut current_row_answers = List.create();
             for j in 0..m do (
-                let mut current_cell_answer = 0 as_Int64;
+                let mut current_cell_answer = 0;
                 let line_below = List.at(&map, i + 1);
                 let char_below = String.at(line_below^, j);
                 if char_below == '^' then (
                     current_cell_answer = (
-                        1 as_Int64
+                        1
                         + (List.at(&next_row_answers, j - 1))^
                         + (List.at(&next_row_answers, j + 1))^
                     );
@@ -89,19 +89,19 @@ let answer :: Int64 = unwindable block (
         );
         for j in 0..m do (
             if String.at(first_line^, j) == 'S' then (
-                let answer :: Int64 = (List.at(&next_row_answers, j))^ + 1 as_Int64;
+                let answer :: Int64 = (List.at(&next_row_answers, j))^ + 1;
                 unwind block answer;
             );
         );
     );
-    -1 as_Int64
+    -1
 );
 
 dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = parse("21"), .part2 = parse("40")),
+    .example = { .part1 = parse("21"), .part2 = parse("40") },
     .part1 = parse("1524"),
     .part2 = parse("32982105837605"),
 );

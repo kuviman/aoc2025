@@ -13,13 +13,13 @@ let k = if part1 then 2 else 12;
 # let f = () => (
 # List |> map (x => if x < 0 then return :Error)
 # );
-let mut answer :: Int64 = 0 as_int64;
+let mut answer :: Int64 = 0;
 for line in String.lines(input) do (
     let n = String.length(line);
     if n == 0 then continue;
     
     dbg.print(line);
-    let mut line_answer = 0 as_int64;
+    let mut line_answer :: Int64 = 0;
     let data = (
         let mut current_start = 0;
         let mut current_end = 0;
@@ -62,15 +62,15 @@ for line in String.lines(input) do (
                 current_end += 1;
             );
         );
-        let max_in_range = () -> (.index :: Int32, .value :: Int32) => with_return (
+        let max_in_range = () -> { .index :: Int32, .value :: Int32 } => with_return (
             let mut digit = 9;
             while digit >= 0 do (
                 let positions = List.at(&positions_by_digit, digit);
                 if Queue.length(positions) != 0 then (
-                    return (
+                    return {
                         .index = (Queue.front(positions))^,
                         .value = digit,
-                    );
+                    };
                 );
                 
                 digit -= 1;
@@ -78,20 +78,20 @@ for line in String.lines(input) do (
             
             panic("nothing found")
         );
-        (
+        {
             .move_start_to,
             .move_end_to,
             .max_in_range,
-        )
+        }
     );
     for i in 0..k do (
         data.move_end_to(n - k + i + 1);
-        let (
+        let {
             .index = new_start,
             .value = next_digit,
-        ) = data.max_in_range();
+        } = data.max_in_range();
         data.move_start_to(new_start + 1);
-        line_answer = line_answer * 10 as_int64 + next_digit as_int64;
+        line_answer = line_answer * 10 + next_digit as_int64;
     );
     
     dbg.print(line_answer);
@@ -102,7 +102,7 @@ dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = parse("357"), .part2 = parse("3121910778619")),
+    .example = { .part1 = parse("357"), .part2 = parse("3121910778619") },
     .part1 = parse("17144"),
     .part2 = parse("170371185255900"),
 );

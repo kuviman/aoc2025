@@ -5,9 +5,9 @@ let input = std.fs.read_file(input_path);
 let abs = x => if x < 0 then -x else x;
 let max = (a, b) => if a > b then a else b;
 let min = (a, b) => if a < b then a else b;
-const Shape = type (
+const Shape = newtype {
     .rows :: List.t[String],
-);
+};
 let mut shapes :: List.t[Shape] = List.create();
 let print_shape = (shape :: &Shape) => (
     for &s in List.iter(&shape^.rows) do (
@@ -74,21 +74,23 @@ let solve = (.width :: Int32, .height :: Int32, .amounts :: List.t[Int32]) => wi
 );
 let end_of_input = () => (
     dbg.print(
-        .trivial,
-        .actually_need_to_solve,
-        .max_extra_space_needed,
-        .min_optimal_free_area,
-        .answer,
+        {
+            .trivial,
+            .actually_need_to_solve,
+            .max_extra_space_needed,
+            .min_optimal_free_area,
+            .answer,
+        }
     );
 );
-let new_shape = () -> Shape => (.rows = List.create());
+let new_shape = () -> Shape => { .rows = List.create() };
 let mut current_shape :: Shape = new_shape();
 for line in String.lines(input) do (
     if String.length(line) == 0 then continue;
     if String.index_of(':', line) == -1 then (
         List.push_back(&mut current_shape.rows, line);
     ) else (
-        let before_colon, after_colon = String.split_once(line, ':');
+        let { before_colon, after_colon } = String.split_once(line, ':');
         if List.length(&current_shape.rows) != 0 then (
             print("[INFO] read shape:");
             print_shape(&current_shape);
@@ -96,7 +98,7 @@ for line in String.lines(input) do (
             current_shape = new_shape();
         );
         if String.length(after_colon) != 0 then (
-            let width, height = String.split_once(before_colon, 'x');
+            let { width, height } = String.split_once(before_colon, 'x');
             let width = width |> parse;
             let height = height |> parse;
             let mut amounts = List.create();
@@ -114,7 +116,7 @@ end_of_input();
 
 assert_answers(
     answer,
-    .example = (.part1 = -1, .part2 = -1),
+    .example = { .part1 = -1, .part2 = -1 },
     .part1 = 495,
     .part2 = -1,
 );

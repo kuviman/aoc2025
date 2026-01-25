@@ -3,11 +3,11 @@ include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
 let input = std.fs.read_file(input_path);
 let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
-const Point = type (
+const Point = newtype {
     .x :: Int64,
     .y :: Int64,
     .z :: Int64,
-);
+};
 
 # ./main.ks 100 --part2 input.txt
 let max_points = if std.sys.argc() >= 4 then (
@@ -23,11 +23,11 @@ for line in String.lines(input) do (
         for part in String.split(line, ',') do (
             List.push_back(&mut coords, part |> parse);
         );
-        let point = (
-            .x = (List.at(&coords, 0))^,
-            .y = (List.at(&coords, 1))^,
-            .z = (List.at(&coords, 2))^,
-        );
+        let point = {
+            .x = List.at(&coords, 0)^,
+            .y = List.at(&coords, 1)^,
+            .z = List.at(&coords, 2)^,
+        };
         
         List.push_back(
             &mut points,
@@ -46,16 +46,16 @@ let sqr_distance = (&a, &b) => (
 const PairSet = (
     module:
     use std.collections.Treap;
-    const data = type (Int32, Int32, .sqr_d :: Int64);
-    const t = type (.inner :: Treap.t[data]);
-    const create = () -> t => (
+    const data = newtype { Int32, Int32, .sqr_d :: Int64 };
+    const t = newtype { .inner :: Treap.t[data] };
+    const create = () -> t => {
         .inner = Treap.create(),
-    );
+    };
     const length = (set :: &t) -> Int32 => (
         Treap.length(&set^.inner)
     );
     const add = (set :: &mut t, d :: data) => (
-        let left, right = Treap.split(
+        let { left, right } = Treap.split(
             set^.inner,
             node => (
                 if d.sqr_d < node^.value.sqr_d then (
@@ -76,7 +76,7 @@ const PairSet = (
     );
     const keep_minimum = (set :: &mut t, n :: Int32) => (
         if length(&set^) > n then (
-            let left, _right = Treap.split_at(set^.inner, n);
+            let { left, _right } = Treap.split_at(set^.inner, n);
             set^.inner = left;
         );
     );
@@ -99,7 +99,7 @@ for i in 0..n do (
         let p_j = List.at(&points, j);
         let sqr_d = sqr_distance(p_i, p_j);
         # dbg.print (p_i^, p_j^, .sqr_d, .pairs_to_connect);
-        PairSet.add(&mut pairs, (i, j, .sqr_d));
+        PairSet.add(&mut pairs, { i, j, .sqr_d });
         if part1 then (
             PairSet.keep_minimum(&mut pairs, pairs_to_connect);
         );
@@ -107,28 +107,30 @@ for i in 0..n do (
 );
 const DSU = (
     module:
-    const root = newtype (
+    const root = newtype {
         .id :: Int32,
         .count :: Int32,
-    );
+    };
     const node = newtype (
-        | :Root(.data :: root,)
-        | :NonRoot(.closer_to_root :: &mut node,)
+        | :Root { .data :: root }
+        | :NonRoot { .closer_to_root :: &mut node }
     );
     let mut next_id = 0;
     let new_node = () -> node => (
         next_id += 1;
-        :Root(.data = (
-            .id = next_id,
-            .count = 1,
-        ),)
+        :Root {
+            .data = {
+                .id = next_id,
+                .count = 1,
+            },
+        }
     );
     const find_root_node = (v :: &mut node) -> &mut node => (
         match v^ with (
-            | :Root(_) => v
-            | :NonRoot(.closer_to_root) => (
+            | :Root _ => v
+            | :NonRoot { .closer_to_root } => (
                 let root = find_root_node(closer_to_root);
-                v^ = :NonRoot(.closer_to_root = root);
+                v^ = :NonRoot { .closer_to_root = root };
                 root
             )
         )
@@ -136,8 +138,8 @@ const DSU = (
     const find_root = (v :: &mut node) -> &mut root => (
         match (find_root_node(v))^ with (
             # TODO ref mut
-            | :Root(mut root) => &mut root.data
-            | :NonRoot(_) => panic("bug")
+            | :Root (mut root) => &mut root.data
+            | :NonRoot (_) => panic("bug")
         )
     );
     const merge = (a :: &mut node, b :: &mut node) -> Bool => (
@@ -150,7 +152,7 @@ const DSU = (
                 let root_a = find_root(a);
                 let root_b = find_root(b);
                 root_b^.count += root_a^.count;
-                a^ = :NonRoot(.closer_to_root = b);
+                a^ = :NonRoot { .closer_to_root = b };
             );
             if root_a^.count < root_b^.count then (
                 attach(a, b);
@@ -178,7 +180,7 @@ for i in 0..n do (
 #     dbg.print point;
 # );
 let mut answer_part2 = 0 |> as_Int64;
-for &(i, j, .sqr_d) in PairSet.iter(&pairs) do (
+for &{ i, j, .sqr_d } in PairSet.iter(&pairs) do (
     # dbg.print (.points = points.inner, .i);
     let a = List.at(&points, i);
     let b = List.at(&points, j);
@@ -204,7 +206,7 @@ let answer = if part1 then (
         use std.collections.Treap;
         let mut t = Treap.create();
         for &x in List.iter(&a^) do (
-            let left, right = Treap.split(
+            let { left, right } = Treap.split(
                 t,
                 node => (
                     if less(&x, &node^.value) then (
@@ -255,7 +257,7 @@ dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = parse("40"), .part2 = parse("25272")),
+    .example = { .part1 = parse("40"), .part2 = parse("25272") },
     .part1 = parse("123420"),
     .part2 = parse("673096646"),
 );

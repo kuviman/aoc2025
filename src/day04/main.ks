@@ -26,12 +26,12 @@ let in_bounds = (i, j) => (
 let mut q = Queue.create();
 for i in 0..n do (
     for j in 0..m do (
-        Queue.push(&mut q, (i, j));
+        Queue.push(&mut q, { i, j });
     );
 );
 let mut answer = 0;
 while Queue.length(&q) != 0 do (
-    let i, j = Queue.pop(&mut q);
+    let { i, j } = Queue.pop(&mut q);
     if (at_mut(i, j))^ != '@' then (
         continue;
     );
@@ -59,7 +59,7 @@ while Queue.length(&q) != 0 do (
             for ai in i - 1..i + 2 do (
                 for aj in j - 1..j + 2 do (
                     if in_bounds(ai, aj) then (
-                        Queue.push(&mut q, (ai, aj));
+                        Queue.push(&mut q, { ai, aj });
                     );
                 );
             );
@@ -73,7 +73,7 @@ dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = 13, .part2 = 43),
+    .example = { .part1 = 13, .part2 = 43 },
     .part1 = 1457,
     .part2 = 8310,
 );

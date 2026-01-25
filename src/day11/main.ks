@@ -10,17 +10,17 @@ let one = as_Int64(1);
 const Graph = (
     module:
     const VertexId = String;
-    const Vertex = [T] newtype (
+    const Vertex = [T] newtype {
         .id :: VertexId,
         .data :: T,
         .out :: List.t[type (&mut Vertex[T])],
-    );
-    const t = [T] newtype (
+    };
+    const t = [T] newtype {
         .vs :: Map.t[VertexId, Vertex[T]],
-    );
-    const create = [T] () -> t[T] => (
+    };
+    const create = [T] () -> t[T] => {
         .vs = Map.create()
-    );
+    };
     const get_or_init_vertex = [T] (
         g :: &mut t[T],
         id :: VertexId,
@@ -29,11 +29,11 @@ const Graph = (
         Map.get_or_init(
             &mut g^.vs,
             id,
-            () => (
+            () => {
                 .id,
                 .data = init(),
                 .out = List.create(),
-            ),
+            },
         )
     );
     const get_mut = [T] (g :: &mut t[T], id :: VertexId) -> &mut Vertex[T] => (
@@ -43,7 +43,7 @@ const Graph = (
         Map.get(&g^.vs, id) |> Option.unwrap
     );
     const print = [T] (g :: &t[T]) => (
-        for &(.key = id, .value = v) in Map.iter(&g^.vs) do (
+        for &{ .key = id, .value = v } in Map.iter(&g^.vs) do (
             let mut s = id + ": ";
             let mut first = true;
             for &u in List.iter(&v.out) do (
@@ -61,36 +61,36 @@ const Graph = (
         );
     );
 );
-const Pt2Data = newtype (
+const Pt2Data = newtype {
     # [visited_dac][visited_fft]
     .false_false :: Int64,
     .false_true :: Int64,
     .true_false :: Int64,
     .true_true :: Int64,
-);
-const VertexData = newtype (
+};
+const VertexData = newtype {
     .pt2 :: Pt2Data,
     .paths_to_target :: Int32,
-);
+};
 let mut g :: Graph.t[VertexData] = Graph.create();
 let get_or_init_vertex = (name :: String) => (
     Graph.get_or_init_vertex(
         &mut g,
         name,
-        () => (
+        () => {
             .paths_to_target = -1,
-            .pt2 = (
+            .pt2 = {
                 .false_false = -one,
                 .false_true = -one,
                 .true_false = -one,
                 .true_true = -one,
-            ),
-        ),
+            },
+        },
     )
 );
 for line in String.lines(input) do (
     if String.length(line) == 0 then continue;
-    let v, out = String.split_once(line, ':');
+    let { v, out } = String.split_once(line, ':');
     let v = get_or_init_vertex(v);
     for u in String.split(out, ' ') do (
         let u = String.trim(u);
@@ -166,7 +166,7 @@ let answer = if part1 then (
 dbg.print(answer);
 assert_answers(
     answer,
-    .example = (.part1 = parse("5"), .part2 = parse("2")),
+    .example = { .part1 = parse("5"), .part2 = parse("2") },
     .part1 = parse("615"),
     .part2 = parse("303012373210128"),
 );

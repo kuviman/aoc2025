@@ -22,16 +22,16 @@ let assert = x => (
 );
 let assert_answers = (
     answer,
-    .example :: (.part1 :: _, .part2 :: _),
+    .example :: { .part1 :: _, .part2 :: _ },
     .part1 = expected_answer_part1,
     .part2 = expected_answer_part2,
 ) => (
     let expected = if input_path != "input.txt" then (
         example
-    ) else (
+    ) else {
         .part1 = expected_answer_part1,
         .part2 = expected_answer_part2,
-    );
+    };
     let expected = if part1 then expected.part1 else expected.part2;
     if answer != expected then (
         print(

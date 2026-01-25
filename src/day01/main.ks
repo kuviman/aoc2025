@@ -1,14 +1,14 @@
 #!/usr/bin/env kast
 include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
-const Direction = type (
+const Direction = newtype (
     | :Left
     | :Right
 );
-const Instruction = type (
+const Instruction = newtype {
     .direction :: Direction,
     .distance :: Int32,
-);
+};
 let instruction_delta = (instruction :: Instruction) -> Int32 => (
     match instruction.direction with (
         | :Left => -instruction.distance
@@ -28,10 +28,10 @@ let parse_instruction = s -> Instruction => (
     );
     let distance = String.substring(s, 1, String.length(s) - 1)
         |> String.parse;
-    (
+    {
         .direction,
         .distance,
-    )
+    }
 );
 let read_input = () -> Input => (
     let input = std.fs.read_file(input_path);
@@ -94,7 +94,7 @@ std.dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = 3, .part2 = 6),
+    .example = { .part1 = 3, .part2 = 6 },
     .part1 = 1086,
     .part2 = 6268,
 );

@@ -9,17 +9,17 @@ if std.sys.argc() >= 4 and std.sys.argv_at(1) == "--svg" then (
     print("\" fill=\"black\" stroke=\"white\" stroke-width=\"100\"/></svg>");
 );
 let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
-const Coords = type (
+const Coords = newtype {
     .x :: Int64,
     .y :: Int64,
-);
+};
 let mut tiles :: List.t[Coords] = List.create();
 for line in String.lines(input) do (
     if String.length(line) != 0 then (
-        let x, y = String.split_once(line, ',');
+        let { x, y } = String.split_once(line, ',');
         let x = x |> parse;
         let y = y |> parse;
-        let coords :: Coords = (.x, .y);
+        let coords :: Coords = { .x, .y };
         List.push_back(&mut tiles, coords);
     );
 );
@@ -29,11 +29,11 @@ print("[INFO] coords read");
 # TODO make lang easier to use Int64 literals
 let zero = as_Int64(0);
 let one = as_Int64(1);
-const Zero = [Self] type (
+const Zero = [Self] newtype {
     .zero :: Self,
-);
-impl Int32 as Zero = (.zero = 0);
-impl Int64 as Zero = (.zero = as_Int64(0));
+};
+impl Int32 as Zero = { .zero = 0 };
+impl Int64 as Zero = { .zero = as_Int64(0) };
 const abs = [T] (x :: T) -> T => (
     let zero = (T as Zero).zero;
     if x < zero then (
@@ -61,9 +61,9 @@ let answer = if part1 then (
     answer
 ) else (
     use std.collections.Treap;
-    let mut xs, mut ys = Treap.create(), Treap.create();
+    let { mut xs, mut ys } = { Treap.create(), Treap.create() };
     let idx_of = (t :: &Treap.t[_], x :: Int64) -> Int32 => (
-        let less, _ = Treap.split(
+        let { less, _ } = Treap.split(
             t^,
             data => (
                 if data^.value >= x then (
@@ -79,15 +79,15 @@ let answer = if part1 then (
     let uncompress_coord = (t, x) => (
         (Treap.at(t, x))^
     );
-    let uncompress = (.x, .y) => (
+    let uncompress = { .x, .y } => {
         .x = uncompress_coord(&xs, x),
         .y = uncompress_coord(&ys, y),
-    );
+    };
     let add = (t :: &mut Treap.t[_], x :: Int64) => 
     # print <| Treap.to_string (t, &x => to_string x);
     # print "===";
     (
-        let less, greater_or_equal = Treap.split(
+        let { less, greater_or_equal } = Treap.split(
             t^,
             data => (
                 if data^.value >= x then (
@@ -97,8 +97,7 @@ let answer = if part1 then (
                 )
             ),
         );
-        let _,
-        greater = Treap.split(
+        let { _, greater } = Treap.split(
             greater_or_equal,
             data => (
                 if data^.value >= x + one then (
@@ -116,8 +115,7 @@ let answer = if part1 then (
         # print <| Treap.to_string (&greater, &x => to_string x);
         t^ = Treap.join(less, Treap.join(Treap.singleton(x), greater));
     );
-    let mut i = 0;
-    for &(.x, .y) in List.iter(&tiles) do (
+    for { i, &{ .x, .y } } in List.iter(&tiles) |> std.iter.enumerate do (
         print(
             "[INFO] compressing coords "
             + (to_string(i))
@@ -131,7 +129,6 @@ let answer = if part1 then (
         add(&mut ys, y - one);
         add(&mut ys, y);
         add(&mut ys, y + one);
-        i += 1;
     );
     
     print(
@@ -141,16 +138,16 @@ let answer = if part1 then (
         + (to_string <| Treap.length(&ys))
     );
     let mut vs = List.create();
-    for &(.x, .y) in List.iter(&tiles) do (
+    for &{ .x, .y } in List.iter(&tiles) do (
         let x = idx_of(&xs, x);
         let y = idx_of(&ys, y);
-        List.push_back(&mut vs, (.x, .y));
+        List.push_back(&mut vs, { .x, .y });
     );
     if verbose then (
         print(
             Treap.to_string(
                 &vs.inner,
-                &(.x, .y) => (
+                &{ .x, .y } => (
                     to_string(x) + " " + to_string(y)
                 ),
             )
@@ -161,11 +158,11 @@ let answer = if part1 then (
     const Map = (
         module:
         use std.collections.Treap;
-        const t = type (
+        const t = newtype {
             .n :: Int32,
             .m :: Int32,
             .repr :: Treap.t[Treap.t[Int32]],
-        );
+        };
         let create = (n, m) -> t => (
             let mut repr = Treap.create();
             for i in 0..n do (
@@ -182,11 +179,11 @@ let answer = if part1 then (
                 
                 repr = Treap.join(repr, Treap.singleton(row));
             );
-            (
+            {
                 .n,
                 .m,
-                .repr
-            )
+                .repr,
+            }
         );
         let at_mut = (map :: &mut t, i, j) -> &mut Int32 => (
             Treap.at_mut(Treap.at_mut(&mut map^.repr, i), j)
@@ -257,7 +254,7 @@ let answer = if part1 then (
         );
     );
     const ACTUAL_CORNER = 100;
-    for &(.x, .y) in List.iter(&vs) do (
+    for &{ .x, .y } in List.iter(&vs) do (
         (Map.at_mut(&mut map, x, y))^ = ACTUAL_CORNER;
     );
     
@@ -301,8 +298,8 @@ let answer = if part1 then (
             )
         );
         let try_direction = dir => (
-            let mut a = (.x = a.x, .y = a.y);
-            let mut b = (.x = b.x, .y = b.y);
+            let mut a = { .x = a.x, .y = a.y };
+            let mut b = { .x = b.x, .y = b.y };
             print("[INFO] trying direction " + to_string(dir));
             let mut max_y = b.y;
             while Map.at(&map, b.x, max_y) != 0 do (
@@ -347,7 +344,7 @@ dbg.print(answer);
 
 assert_answers(
     answer,
-    .example = (.part1 = parse("50"), .part2 = parse("24")),
+    .example = { .part1 = parse("50"), .part2 = parse("24") },
     .part1 = parse("4749672288"),
     .part2 = parse("1479665889"),
 );
