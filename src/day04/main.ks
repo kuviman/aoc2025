@@ -35,7 +35,7 @@ while Queue.length(&q) != 0 do (
     if (at_mut(i, j))^ != '@' then (
         continue;
     );
-    let mut adj_papers = 0;
+    let mut adj_papers :: Int32 = 0;
     for ai in i - 1..i + 2 do (
         for aj in j - 1..j + 2 do (
             if (

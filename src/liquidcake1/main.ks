@@ -617,6 +617,6 @@ if part1 then (
 assert_answers(
     answer,
     .example = (.part1 = 12251, .part2 = 2279),
-    .part1 = parse("1401106"),
-    .part2 = parse("517533251"),
+    .part1 = 1401106,
+    .part2 = 517533251,
 );
