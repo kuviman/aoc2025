@@ -7,38 +7,38 @@ let input = std.fs.read_file(input_path);
 impl syntax (value as_Int64) = `(
     parse(to_string($value))
 );
-let mut map = List.create();
+let mut map = ArrayList.new();
 for line in String.lines(input) do (
     if String.length(line) != 0 then (
-        List.push_back(&mut map, line);
+        ArrayList.push_back(&mut map, line);
     );
 );
-let first_line = List.at(&map, 0);
-let n = List.length(&map);
-let m = String.length((List.at(&map, 0))^);
+let first_line = ArrayList.at(&map, 0);
+let n = ArrayList.length(&map);
+let m = String.length((ArrayList.at(&map, 0))^);
 let answer :: Int64 = unwindable block (
     if part1 then (
         let mut answer = 0;
-        let mut current_beams = List.create();
+        let mut current_beams = ArrayList.new();
         for i in 0..m do (
-            List.push_back(&mut current_beams, String.at(first_line^, i) == 'S');
+            ArrayList.push_back(&mut current_beams, String.at(first_line^, i) == 'S');
         );
         for i in 0..n - 1 do (
-            let mut next_beams = List.create();
+            let mut next_beams = ArrayList.new();
             for j in 0..m do (
-                List.push_back(&mut next_beams, false);
+                ArrayList.push_back(&mut next_beams, false);
             );
             for j in 0..m do (
-                if (List.at(&current_beams, j))^ then (
-                    let line_below = List.at(&map, i + 1);
+                if (ArrayList.at(&current_beams, j))^ then (
+                    let line_below = ArrayList.at(&map, i + 1);
                     let char_below = String.at(line_below^, j);
                     if char_below == '^' then (
                         answer += 1;
-                        (List.at_mut(&mut next_beams, j - 1))^ = true;
-                        (List.at_mut(&mut next_beams, j + 1))^ = true;
+                        (ArrayList.at_mut(&mut next_beams, j - 1))^ = true;
+                        (ArrayList.at_mut(&mut next_beams, j + 1))^ = true;
                     ) else (
                         (
-                            List.at_mut(&mut next_beams, j)
+                            ArrayList.at_mut(&mut next_beams, j)
                         )^ = true;
                     );
                 );
@@ -48,9 +48,9 @@ let answer :: Int64 = unwindable block (
         );
         unwind block answer;
     ) else (
-        let mut next_row_answers = List.create();
+        let mut next_row_answers = ArrayList.new();
         for _ in 0..m do (
-            List.push_back(&mut next_row_answers, 0);
+            ArrayList.push_back(&mut next_row_answers, 0);
         );
         
         @syntax "for_range_rev" 7.5 @wrap never = "for" " " var " " "in" " " "(" start " " ".." " " end ")" "." "rev" "(" ")" " " "do" " " body;
@@ -65,31 +65,31 @@ let answer :: Int64 = unwindable block (
         
         for i in (0 .. n - 1).rev() do (
             # dbg.print "inside loop";
-            let mut current_row_answers = List.create();
+            let mut current_row_answers = ArrayList.new();
             for j in 0..m do (
                 let mut current_cell_answer = 0;
-                let line_below = List.at(&map, i + 1);
+                let line_below = ArrayList.at(&map, i + 1);
                 let char_below = String.at(line_below^, j);
                 if char_below == '^' then (
                     current_cell_answer = (
                         1
-                        + (List.at(&next_row_answers, j - 1))^
-                        + (List.at(&next_row_answers, j + 1))^
+                        + (ArrayList.at(&next_row_answers, j - 1))^
+                        + (ArrayList.at(&next_row_answers, j + 1))^
                     );
                 ) else (
                     
-                    current_cell_answer = (List.at(&next_row_answers, j))^;
+                    current_cell_answer = (ArrayList.at(&next_row_answers, j))^;
                 );
                 
                 # print ("at " + to_string i + ", " + to_string j + " = " + to_string current_cell_answer);
-                List.push_back(&mut current_row_answers, current_cell_answer);
+                ArrayList.push_back(&mut current_row_answers, current_cell_answer);
             );
             
             next_row_answers = current_row_answers;
         );
         for j in 0..m do (
             if String.at(first_line^, j) == 'S' then (
-                let answer :: Int64 = (List.at(&next_row_answers, j))^ + 1;
+                let answer :: Int64 = (ArrayList.at(&next_row_answers, j))^ + 1;
                 unwind block answer;
             );
         );

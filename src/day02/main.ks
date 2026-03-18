@@ -5,7 +5,7 @@ const Set = (
     use std.collections.Treap;
     const set = Treap.t;
     const t = set;
-    const create = [T] () -> set[T] => Treap.create();
+    const new = [T] () -> set[T] => Treap.new();
     const add = [T] (s :: set[T], x :: T) -> set[T] => (
         Treap.join(s, Treap.singleton(x))
     );
@@ -32,7 +32,7 @@ for range in String.split(input, ',') do (
         
         end |> to_string |> String.length
     );
-    let mut visited = Set.create();
+    let mut visited = Set.new();
     for times in 2..(max_times + 1) do (
         let mut x :: Int32 = (
             # let s = start |> to_string;

@@ -6,11 +6,11 @@ let abs = x => if x < 0 then -x else x;
 let max = (a, b) => if a > b then a else b;
 let min = (a, b) => if a < b then a else b;
 const Shape = newtype {
-    .rows :: List.t[String],
+    .rows :: ArrayList.t[String],
 };
-let mut shapes :: List.t[Shape] = List.create();
+let mut shapes :: ArrayList.t[Shape] = ArrayList.new();
 let print_shape = (shape :: &Shape) => (
-    for &s in List.iter(&shape^.rows) do (
+    for &s in ArrayList.iter(&shape^.rows) do (
         print(s);
     );
 );
@@ -19,11 +19,11 @@ let mut actually_need_to_solve = 0;
 let mut max_extra_space_needed = 0;
 let mut min_optimal_free_area = 1000000000;
 let mut answer = 0;
-let solve = (.width :: Int32, .height :: Int32, .amounts :: List.t[Int32]) => with_return (
-    let mut shape_tiles = List.create();
-    for &shape in List.iter(&shapes) do (
+let solve = (.width :: Int32, .height :: Int32, .amounts :: ArrayList.t[Int32]) => with_return (
+    let mut shape_tiles = ArrayList.new();
+    for &shape in ArrayList.iter(&shapes) do (
         let mut tiles = 0;
-        for &s in List.iter(&shape.rows) do (
+        for &s in ArrayList.iter(&shape.rows) do (
             for c in String.iter(s) do (
                 if c == '#' then (
                     tiles += 1;
@@ -31,14 +31,14 @@ let solve = (.width :: Int32, .height :: Int32, .amounts :: List.t[Int32]) => wi
             );
         );
         
-        List.push_back(&mut shape_tiles, tiles);
+        ArrayList.push_back(&mut shape_tiles, tiles);
     );
     let mut dumb_area = 0;
     let mut optimal_area = 0;
     let mut i = 0;
-    for &amount in List.iter(&amounts) do (
+    for &amount in ArrayList.iter(&amounts) do (
         dumb_area += 3 * 3 * amount;
-        optimal_area += (List.at(&shape_tiles, i))^ * amount;
+        optimal_area += (ArrayList.at(&shape_tiles, i))^ * amount;
         i += 1;
     );
     let area = width * height;
@@ -83,28 +83,28 @@ let end_of_input = () => (
         }
     );
 );
-let new_shape = () -> Shape => { .rows = List.create() };
+let new_shape = () -> Shape => { .rows = ArrayList.new() };
 let mut current_shape :: Shape = new_shape();
 for line in String.lines(input) do (
     if String.length(line) == 0 then continue;
     if String.index_of(':', line) == -1 then (
-        List.push_back(&mut current_shape.rows, line);
+        ArrayList.push_back(&mut current_shape.rows, line);
     ) else (
         let { before_colon, after_colon } = String.split_once(line, ':');
-        if List.length(&current_shape.rows) != 0 then (
+        if ArrayList.length(&current_shape.rows) != 0 then (
             print("[INFO] read shape:");
             print_shape(&current_shape);
-            List.push_back(&mut shapes, current_shape);
+            ArrayList.push_back(&mut shapes, current_shape);
             current_shape = new_shape();
         );
         if String.length(after_colon) != 0 then (
             let { width, height } = String.split_once(before_colon, 'x');
             let width = width |> parse;
             let height = height |> parse;
-            let mut amounts = List.create();
+            let mut amounts = ArrayList.new();
             for part in String.split(after_colon, ' ') do (
                 if String.length(part) == 0 then continue;
-                List.push_back(&mut amounts, part |> parse);
+                ArrayList.push_back(&mut amounts, part |> parse);
             );
             
             solve(.width, .height, .amounts);

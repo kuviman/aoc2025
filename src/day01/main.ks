@@ -1,5 +1,6 @@
 #!/usr/bin/env kast
 include "../common.ks";
+dbg.print(__FILE__);
 std.sys.chdir(std.path.dirname(__FILE__));
 const Direction = newtype (
     | :Left
@@ -15,7 +16,7 @@ let instruction_delta = (instruction :: Instruction) -> Int32 => (
         | :Right => instruction.distance
     )
 );
-const Input = List.t[Instruction];
+const Input = ArrayList.t[Instruction];
 let parse_instruction = s -> Instruction => (
     let direction_char = String.at(s, 0);
     let direction :: Direction = if direction_char == 'R' then (
@@ -35,14 +36,14 @@ let parse_instruction = s -> Instruction => (
 );
 let read_input = () -> Input => (
     let input = std.fs.read_file(input_path);
-    let mut result = List.create();
+    let mut result = ArrayList.new();
     let mut line_idx :: Int32 = 0;
     for line in String.lines(input) do (
         if line == "" then continue;
         std.dbg.print(line_idx);
         line_idx += 1;
         # std.dbg.print line;
-        List.push_back(
+        ArrayList.push_back(
             &mut result,
             parse_instruction(line),
         );
@@ -50,7 +51,7 @@ let read_input = () -> Input => (
     result
 );
 let input = read_input();
-# List.iter (input, std.dbg.print[_])
+# ArrayList.iter (input, std.dbg.print[_])
 let mut current_position = 50;
 let mut answer = 0;
 let rotate = (delta) => (
@@ -80,7 +81,7 @@ let rotate = (delta) => (
     
     current_position
 );
-for &instruction in List.iter(&input) do (
+for &instruction in ArrayList.iter(&input) do (
     rotate <| instruction_delta(instruction);
     # std.dbg.print current_position;
     if part1 then (

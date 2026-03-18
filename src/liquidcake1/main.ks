@@ -1,6 +1,6 @@
 #!/usr/bin/env kast
 use std.prelude.*;
-use std.collections.Map;
+const Map = std.collections.OrdMap;
 include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
 let input = std.fs.read_file(input_path);
@@ -45,9 +45,9 @@ const LetterRule = newtype (
     | :Palindrome
     | :MultipleOf (Int32)
 );
-let mut letter_map = List.create();
-let mut letter_rules :: Map.t[Char, LetterRule] = Map.create();
-let mut digit_map = List.create();
+let mut letter_map = ArrayList.new();
+let mut letter_rules :: Map.t[Char, LetterRule] = Map.new();
+let mut digit_map = ArrayList.new();
 let parse_letter_rule = line => (
     let { c, rule } = string_split_once(line, .sep = " is a ");
     if String.length(c) != 1 then panic("AAAAAA");
@@ -81,44 +81,44 @@ for line in String.lines(input) do (
     );
     match parse_state with (
         | :LetterMap => (
-            List.push_back(&mut letter_map, line);
+            ArrayList.push_back(&mut letter_map, line);
         )
         | :Rules => (
             parse_letter_rule(line);
         )
         | :DigitMap => (
-            let mut digits = List.create();
+            let mut digits = ArrayList.new();
             for c in String.iter(line) do (
-                List.push_back(
+                ArrayList.push_back(
                     &mut digits,
                     Char.to_digit(c),
                 );
             );
             
-            List.push_back(&mut digit_map, digits);
+            ArrayList.push_back(&mut digit_map, digits);
         )
     );
 );
-let n = List.length(&letter_map);
-let m = String.length((List.at(&letter_map, 0))^);
-const SudokuMap = List.t[List.t[Option.t[Int32]]];
+let n = ArrayList.length(&letter_map);
+let m = String.length((ArrayList.at(&letter_map, 0))^);
+const SudokuMap = ArrayList.t[ArrayList.t[Option.t[Int32]]];
 let mut sudoku_map :: SudokuMap = (
-    let mut map = List.create();
+    let mut map = ArrayList.new();
     for i in 0..n do (
-        let mut row = List.create();
+        let mut row = ArrayList.new();
         for j in 0..m do (
-            List.push_back(&mut row, :None);
+            ArrayList.push_back(&mut row, :None);
         );
         
-        List.push_back(&mut map, row);
+        ArrayList.push_back(&mut map, row);
     );
     
     map
 );
 let print_sudoku_map = (sudoku_map :: &SudokuMap) => (
-    for row in List.iter(sudoku_map) do (
+    for row in ArrayList.iter(sudoku_map) do (
         let mut line = "";
-        for &cell in List.iter(row) do (
+        for &cell in ArrayList.iter(row) do (
             match cell with (
                 | :None => (line += ".")
                 | :Some (x) => (line += to_string(x))
@@ -129,8 +129,8 @@ let print_sudoku_map = (sudoku_map :: &SudokuMap) => (
     );
 );
 let is_sudoku_solved = (sudoku_map) -> Bool => with_return (
-    for row in List.iter(sudoku_map) do (
-        for &cell in List.iter(row) do (
+    for row in ArrayList.iter(sudoku_map) do (
+        for &cell in ArrayList.iter(row) do (
             match cell with (
                 | :None => return false
                 | :Some (_) => ()
@@ -144,25 +144,25 @@ let read_number_from_digit_map = (si, sj, di, dj) -> Option.t[Int32] => with_ret
     let { mut i, mut j } = { si, sj };
     let mut result = 0;
     loop (
-        let digit = (List.at(List.at(&digit_map, i), j))^;
+        let digit = (ArrayList.at(ArrayList.at(&digit_map, i), j))^;
         if result == 0 and digit == 0 then return :None;
         result = result * 10 + digit;
         i = (i + di) % n;
         j = (j + dj) % m;
-        let c = String.at((List.at(&letter_map, i))^, j);
+        let c = String.at((ArrayList.at(&letter_map, i))^, j);
         if c != '.' then break;
     );
     :Some (result)
 );
-let read_number_from_sudoku_map = (sudoku_map :: &SudokuMap, si, sj, di, dj) -> List.t[Option.t[Int32]] => with_return (
+let read_number_from_sudoku_map = (sudoku_map :: &SudokuMap, si, sj, di, dj) -> ArrayList.t[Option.t[Int32]] => with_return (
     let { mut i, mut j } = { si, sj };
-    let mut result = List.create();
+    let mut result = ArrayList.new();
     loop (
-        let digit = (List.at(List.at(sudoku_map, i), j))^;
-        List.push_back(&mut result, digit);
+        let digit = (ArrayList.at(ArrayList.at(sudoku_map, i), j))^;
+        ArrayList.push_back(&mut result, digit);
         i = (i + di) % n;
         j = (j + dj) % m;
-        let c = String.at((List.at(&letter_map, i))^, j);
+        let c = String.at((ArrayList.at(&letter_map, i))^, j);
         if c != '.' then break;
     );
     
@@ -171,11 +171,11 @@ let read_number_from_sudoku_map = (sudoku_map :: &SudokuMap, si, sj, di, dj) -> 
 let write_number_from_digit_map = (si, sj, di, dj) => with_return (
     let { mut i, mut j } = { si, sj };
     loop (
-        let digit = (List.at(List.at(&digit_map, i), j))^;
-        (List.at_mut(List.at_mut(&mut sudoku_map, i), j))^ = :Some (digit);
+        let digit = (ArrayList.at(ArrayList.at(&digit_map, i), j))^;
+        (ArrayList.at_mut(ArrayList.at_mut(&mut sudoku_map, i), j))^ = :Some (digit);
         i = (i + di) % n;
         j = (j + dj) % m;
-        let c = String.at((List.at(&letter_map, i))^, j);
+        let c = String.at((ArrayList.at(&letter_map, i))^, j);
         if c != '.' then break;
     );
 );
@@ -234,9 +234,9 @@ let check = (c :: Char, number :: Option.t[Int32]) -> Bool => with_return (
 );
 let check_full = (map :: &SudokuMap) -> Bool => with_return (
     # print_sudoku_map(map);
-    let to_number = (list :: List.t[Option.t[Int32]]) -> Option.t[Int32] => with_return (
+    let to_number = (list :: ArrayList.t[Option.t[Int32]]) -> Option.t[Int32] => with_return (
         let mut result = 0;
-        for &digit in List.iter(&list) do (
+        for &digit in ArrayList.iter(&list) do (
             match digit with (
                 | :None => return :None
                 | :Some (digit) => (
@@ -248,7 +248,7 @@ let check_full = (map :: &SudokuMap) -> Bool => with_return (
     );
     for i in 0..n do (
         for j in 0..m do (
-            let c = String.at((List.at(&letter_map, i))^, j);
+            let c = String.at((ArrayList.at(&letter_map, i))^, j);
             if c == '.' then continue;
             let number = read_number_from_sudoku_map(map, i, j, 0, 1) |> to_number;
             if number is :Some (_) then (
@@ -271,7 +271,7 @@ let check_full = (map :: &SudokuMap) -> Bool => with_return (
 );
 for i in 0..n do (
     for j in 0..m do (
-        let c = String.at((List.at(&letter_map, i))^, j);
+        let c = String.at((ArrayList.at(&letter_map, i))^, j);
         if c == '.' then (
             continue;
         );
@@ -286,11 +286,11 @@ for i in 0..n do (
 );
 const Part2 = (
     module:
-    let fill = (sudoku_map :: &SudokuMap, c, number :: List.t[Int32], si, sj, di, dj) => (
+    let fill = (sudoku_map :: &SudokuMap, c, number :: ArrayList.t[Int32], si, sj, di, dj) => (
         (
             let number = (
                 let mut x = 0;
-                for &digit in List.iter(&number) do (
+                for &digit in ArrayList.iter(&number) do (
                     x = x * 10 + digit;
                 );
                 
@@ -308,21 +308,21 @@ const Part2 = (
             print("Try filling " + to_string(c) + " with " + to_string(number));
         );
         let mut sudoku_map = (
-            let mut clone = List.create();
-            for row in List.iter(sudoku_map) do (
-                let mut clone_row = List.create();
-                for &cell in List.iter(row) do (
-                    List.push_back(&mut clone_row, cell);
+            let mut clone = ArrayList.new();
+            for row in ArrayList.iter(sudoku_map) do (
+                let mut clone_row = ArrayList.new();
+                for &cell in ArrayList.iter(row) do (
+                    ArrayList.push_back(&mut clone_row, cell);
                 );
                 
-                List.push_back(&mut clone, clone_row);
+                ArrayList.push_back(&mut clone, clone_row);
             );
             
             clone
         );
         let { mut i, mut j } = { si, sj };
-        for &digit in List.iter(&number) do (
-            (List.at_mut(List.at_mut(&mut sudoku_map, i), j))^ = :Some (digit);
+        for &digit in ArrayList.iter(&number) do (
+            (ArrayList.at_mut(ArrayList.at_mut(&mut sudoku_map, i), j))^ = :Some (digit);
             i = (i + di) % n;
             j = (j + dj) % m;
         );
@@ -332,7 +332,7 @@ const Part2 = (
     let try_fill = (sudoku_map, c :: Char, si, sj, di, dj, .fill) => with_return (
         let number = read_number_from_sudoku_map(sudoku_map, si, sj, di, dj);
         let already_filled = with_return (
-            for digit in List.iter(&number) do (
+            for digit in ArrayList.iter(&number) do (
                 if digit^ is :None then return false;
             );
             true
@@ -340,7 +340,7 @@ const Part2 = (
         if already_filled then return;
         let { min, max } = (
             let mut min = 1;
-            for _ in 1..List.length(&number) do (
+            for _ in 1..ArrayList.length(&number) do (
                 min *= 10;
             );
             { min, min * 10 - 1 }
@@ -350,12 +350,12 @@ const Part2 = (
             | :Some (&rule) => rule
         );
         let try = filled => with_return (
-            if List.length(&filled) != List.length(&number) then (
+            if ArrayList.length(&filled) != ArrayList.length(&number) then (
                 panic("different length");
             );
-            for i in 0..List.length(&number) do (
-                if (List.at(&number, i))^ is :Some (expected) then (
-                    let actual = (List.at(&filled, i))^;
+            for i in 0..ArrayList.length(&number) do (
+                if (ArrayList.at(&number, i))^ is :Some (expected) then (
+                    let actual = (ArrayList.at(&filled, i))^;
                     if expected != actual then return;
                 );
             );
@@ -364,14 +364,14 @@ const Part2 = (
         );
         match rule with (
             | :Palindrome => with_return (
-                let mut filled = List.create();
-                for _ in 0..List.length(&number) do (
-                    List.push_back(&mut filled, -1);
+                let mut filled = ArrayList.new();
+                for _ in 0..ArrayList.length(&number) do (
+                    ArrayList.push_back(&mut filled, -1);
                 );
-                for i in 0..(List.length(&number) + 1) / 2 do (
-                    let j = List.length(&number) - i - 1;
-                    let a = (List.at(&number, i))^;
-                    let b = (List.at(&number, j))^;
+                for i in 0..(ArrayList.length(&number) + 1) / 2 do (
+                    let j = ArrayList.length(&number) - i - 1;
+                    let a = (ArrayList.at(&number, i))^;
+                    let b = (ArrayList.at(&number, j))^;
                     let digit = match { a, b } with (
                         | { :None, :None } => return
                         | { :Some (digit), :None } => digit
@@ -382,9 +382,9 @@ const Part2 = (
                         )
                     );
                     (
-                        List.at_mut(&mut filled, i)
+                        ArrayList.at_mut(&mut filled, i)
                     )^ = digit;
-                    (List.at_mut(&mut filled, j))^ = digit;
+                    (ArrayList.at_mut(&mut filled, j))^ = digit;
                 );
                 
                 try(filled);
@@ -396,15 +396,15 @@ const Part2 = (
                         panic("out of acceptable range");
                     );
                     let filled = (
-                        let mut reversed = List.create();
+                        let mut reversed = ArrayList.new();
                         let mut x = x;
                         while x != 0 do (
-                            List.push_back(&mut reversed, x % 10);
+                            ArrayList.push_back(&mut reversed, x % 10);
                             x /= 10;
                         );
-                        let mut list = List.create();
-                        for i in (0..List.length(&reversed)).rev() do (
-                            List.push_back(&mut list, (List.at(&reversed, i))^);
+                        let mut list = ArrayList.new();
+                        for i in (0..ArrayList.length(&reversed)).rev() do (
+                            ArrayList.push_back(&mut list, (ArrayList.at(&reversed, i))^);
                         );
                         
                         list
@@ -464,7 +464,7 @@ const Part2 = (
         const t = newtype {
             .inner :: Treap.t[type (&SudokuMap)],
         };
-        const create = () -> t => {
+        const new = () -> t => {
             .inner = :Empty,
         };
         const Ord = newtype (
@@ -472,10 +472,10 @@ const Part2 = (
             | :Equal
             | :Greater
         );
-        const cmp_list = [T] (a :: &List.t[T], b :: &List.t[T], .cmp_elem :: (&T, &T) -> Ord) -> Ord => with_return (
-            for i in 0..List.length(a) do (
-                let elem_a = List.at(a, i);
-                let elem_b = List.at(b, i);
+        const cmp_list = [T] (a :: &ArrayList.t[T], b :: &ArrayList.t[T], .cmp_elem :: (&T, &T) -> Ord) -> Ord => with_return (
+            for i in 0..ArrayList.length(a) do (
+                let elem_a = ArrayList.at(a, i);
+                let elem_b = ArrayList.at(b, i);
                 match cmp_elem(elem_a, elem_b) with (
                     | :Equal => ()
                     | ord => return ord
@@ -527,7 +527,7 @@ const Part2 = (
             )
         );
     );
-    let mut visited_states = Visited.create();
+    let mut visited_states = Visited.new();
     let fill_obvious = sudoku_map -> Bool => with_return (
         let try_at = (c, i, j, di, dj) => (
             unwindable check (
@@ -546,7 +546,7 @@ const Part2 = (
         );
         for i in 0..n do (
             for j in 0..m do (
-                let c = String.at((List.at(&letter_map, i))^, j);
+                let c = String.at((ArrayList.at(&letter_map, i))^, j);
                 if c == '.' then continue;
                 try_at(c, i, j, 0, 1);
                 let C = Char.from_code(Char.code(c) + (Char.code('A') - Char.code('a')));
@@ -567,7 +567,7 @@ const Part2 = (
             print("Trying brute");
             for i in 0..n do (
                 for j in 0..m do (
-                    let c = String.at((List.at(&letter_map, i))^, j);
+                    let c = String.at((ArrayList.at(&letter_map, i))^, j);
                     if c == '.' then continue;
                     try_fill(sudoku_map, c, i, j, 0, 1, .fill);
                     let C = Char.from_code(Char.code(c) + (Char.code('A') - Char.code('a')));
@@ -591,9 +591,9 @@ if part1 then (
     
     print("Solved!!!");
     print_sudoku_map(&solved);
-    for line in List.iter(&solved) do (
+    for line in ArrayList.iter(&solved) do (
         let mut odd_digits = 0;
-        for &(:Some (digit)) in List.iter(line) do (
+        for &(:Some (digit)) in ArrayList.iter(line) do (
             if digit % 2 == 0 then (
                 answer += odd_digits;
                 odd_digits = 0;

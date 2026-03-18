@@ -13,14 +13,14 @@ const Coords = newtype {
     .x :: Int64,
     .y :: Int64,
 };
-let mut tiles :: List.t[Coords] = List.create();
+let mut tiles :: ArrayList.t[Coords] = ArrayList.new();
 for line in String.lines(input) do (
     if String.length(line) != 0 then (
         let { x, y } = String.split_once(line, ',');
         let x = x |> parse;
         let y = y |> parse;
         let coords :: Coords = { .x, .y };
-        List.push_back(&mut tiles, coords);
+        ArrayList.push_back(&mut tiles, coords);
     );
 );
 
@@ -45,12 +45,12 @@ const abs = [T] (x :: T) -> T => (
     )
 );
 let answer = if part1 then (
-    let n = List.length(&tiles);
+    let n = ArrayList.length(&tiles);
     let mut answer = zero;
     for i in 0..n do (
         for j in 0..i do (
-            let a = List.at(&tiles, i);
-            let b = List.at(&tiles, j);
+            let a = ArrayList.at(&tiles, i);
+            let b = ArrayList.at(&tiles, j);
             let area = (abs(b^.x - a^.x) + one) * (abs(b^.y - a^.y) + one);
             if area > answer then (
                 answer = area;
@@ -61,7 +61,7 @@ let answer = if part1 then (
     answer
 ) else (
     use std.collections.Treap;
-    let { mut xs, mut ys } = { Treap.create(), Treap.create() };
+    let { mut xs, mut ys } = { Treap.new(), Treap.new() };
     let idx_of = (t :: &Treap.t[_], x :: Int64) -> Int32 => (
         let { less, _ } = Treap.split(
             t^,
@@ -115,12 +115,12 @@ let answer = if part1 then (
         # print <| Treap.to_string (&greater, &x => to_string x);
         t^ = Treap.join(less, Treap.join(Treap.singleton(x), greater));
     );
-    for { i, &{ .x, .y } } in List.iter(&tiles) |> std.iter.enumerate do (
+    for { i, &{ .x, .y } } in ArrayList.iter(&tiles) |> std.iter.enumerate do (
         print(
             "[INFO] compressing coords "
             + (to_string(i))
             + "/"
-            + (to_string <| List.length(&tiles))
+            + (to_string <| ArrayList.length(&tiles))
         );
         
         add(&mut xs, x - one);
@@ -137,11 +137,11 @@ let answer = if part1 then (
         + ", ys="
         + (to_string <| Treap.length(&ys))
     );
-    let mut vs = List.create();
-    for &{ .x, .y } in List.iter(&tiles) do (
+    let mut vs = ArrayList.new();
+    for &{ .x, .y } in ArrayList.iter(&tiles) do (
         let x = idx_of(&xs, x);
         let y = idx_of(&ys, y);
-        List.push_back(&mut vs, { .x, .y });
+        ArrayList.push_back(&mut vs, { .x, .y });
     );
     if verbose then (
         print(
@@ -163,8 +163,8 @@ let answer = if part1 then (
             .m :: Int32,
             .repr :: Treap.t[Treap.t[Int32]],
         };
-        let create = (n, m) -> t => (
-            let mut repr = Treap.create();
+        let new = (n, m) -> t => (
+            let mut repr = Treap.new();
             for i in 0..n do (
                 print(
                     "[INFO] progress "
@@ -172,7 +172,7 @@ let answer = if part1 then (
                     + "/"
                     + (to_string(n))
                 );
-                let mut row = Treap.create();
+                let mut row = Treap.new();
                 for i in 0..m do (
                     row = Treap.join(row, Treap.singleton(0));
                 );
@@ -194,28 +194,28 @@ let answer = if part1 then (
     );
     
     print("[INFO] creating empty map");
-    let mut map = Map.create(Treap.length(&xs), Treap.length(&ys));
-    print("[INFO] created empty map");
+    let mut map = Map.new(Treap.length(&xs), Treap.length(&ys));
+    print("[INFO] newd empty map");
     
     print("[INFO] drawing edges");
-    for i in 0..List.length(&vs) do (
+    for i in 0..ArrayList.length(&vs) do (
         print(
             "[INFO] progress "
             + (to_string(i))
             + "/"
-            + (to_string <| List.length(&vs))
+            + (to_string <| ArrayList.length(&vs))
         );
         let mut next = i + 1;
-        if next == List.length(&vs) then (
+        if next == ArrayList.length(&vs) then (
             next = 0;
         );
         let mut next_next = next + 1;
-        if next_next == List.length(&vs) then (
+        if next_next == ArrayList.length(&vs) then (
             next_next = 0;
         );
-        let mut a = (List.at(&vs, i))^;
-        let mut b = (List.at(&vs, next))^;
-        let c = (List.at(&vs, next_next))^;
+        let mut a = (ArrayList.at(&vs, i))^;
+        let mut b = (ArrayList.at(&vs, next))^;
+        let c = (ArrayList.at(&vs, next_next))^;
         if a.y == b.y then (
             let mut add = 1;
             let mut y = a.y;
@@ -254,7 +254,7 @@ let answer = if part1 then (
         );
     );
     const ACTUAL_CORNER = 100;
-    for &{ .x, .y } in List.iter(&vs) do (
+    for &{ .x, .y } in ArrayList.iter(&vs) do (
         (Map.at_mut(&mut map, x, y))^ = ACTUAL_CORNER;
     );
     
@@ -274,13 +274,13 @@ let answer = if part1 then (
         );
     );
     let mut answer = as_Int64(0);
-    for i in 0..List.length(&vs) do (
+    for i in 0..ArrayList.length(&vs) do (
         let mut next = i + 1;
-        if next == List.length(&vs) then (
+        if next == ArrayList.length(&vs) then (
             next = 0;
         );
-        let mut a = (List.at(&vs, i))^;
-        let mut b = (List.at(&vs, next))^;
+        let mut a = (ArrayList.at(&vs, i))^;
+        let mut b = (ArrayList.at(&vs, next))^;
         if a.y != b.y then continue;
         if input_path == "input.txt" and abs(a.x - b.x) < 100 then continue;
         if a.x > b.x then (

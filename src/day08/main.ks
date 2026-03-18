@@ -16,20 +16,20 @@ let max_points = if std.sys.argc() >= 4 then (
     
     10000
 );
-let mut points :: List.t[Point] = List.create();
+let mut points :: ArrayList.t[Point] = ArrayList.new();
 for line in String.lines(input) do (
-    if String.length(line) != 0 and List.length(&points) < max_points then (
-        let mut coords = List.create();
+    if String.length(line) != 0 and ArrayList.length(&points) < max_points then (
+        let mut coords = ArrayList.new();
         for part in String.split(line, ',') do (
-            List.push_back(&mut coords, part |> parse);
+            ArrayList.push_back(&mut coords, part |> parse);
         );
         let point = {
-            .x = List.at(&coords, 0)^,
-            .y = List.at(&coords, 1)^,
-            .z = List.at(&coords, 2)^,
+            .x = ArrayList.at(&coords, 0)^,
+            .y = ArrayList.at(&coords, 1)^,
+            .z = ArrayList.at(&coords, 2)^,
         };
         
-        List.push_back(
+        ArrayList.push_back(
             &mut points,
             point,
         );
@@ -38,7 +38,7 @@ for line in String.lines(input) do (
 
 print("[INFO] Input read");
 let pairs_to_connect = if input_path == "example.txt" then 10 else 1000;
-let n = List.length(&points);
+let n = ArrayList.length(&points);
 let sqr = x => x * x;
 let sqr_distance = (&a, &b) => (
     sqr(a.x - b.x) + sqr(a.y - b.y) + sqr(a.z - b.z)
@@ -48,8 +48,8 @@ const PairSet = (
     use std.collections.Treap;
     const data = newtype { Int32, Int32, .sqr_d :: Int64 };
     const t = newtype { .inner :: Treap.t[data] };
-    const create = () -> t => {
-        .inner = Treap.create(),
+    const new = () -> t => {
+        .inner = Treap.new(),
     };
     const length = (set :: &t) -> Int32 => (
         Treap.length(&set^.inner)
@@ -84,7 +84,7 @@ const PairSet = (
         Treap.iter(&set^.inner)
     );
 );
-let mut pairs = PairSet.create();
+let mut pairs = PairSet.new();
 for i in 0..n do (
     print(
         "[INFO] Progress "
@@ -95,8 +95,8 @@ for i in 0..n do (
         + (to_string <| PairSet.length(&pairs))
     );
     for j in 0..i do (
-        let p_i = List.at(&points, i);
-        let p_j = List.at(&points, j);
+        let p_i = ArrayList.at(&points, i);
+        let p_j = ArrayList.at(&points, j);
         let sqr_d = sqr_distance(p_i, p_j);
         # dbg.print (p_i^, p_j^, .sqr_d, .pairs_to_connect);
         PairSet.add(&mut pairs, { i, j, .sqr_d });
@@ -171,19 +171,19 @@ const DSU = (
         root_a^.id == root_b^.id
     );
 );
-let mut nodes = List.create();
+let mut nodes = ArrayList.new();
 for i in 0..n do (
-    List.push_back(&mut nodes, DSU.new_node());
+    ArrayList.push_back(&mut nodes, DSU.new_node());
 );
 
-# for &point in List.iter &points do (
+# for &point in ArrayList.iter &points do (
 #     dbg.print point;
 # );
 let mut answer_part2 = 0 |> as_Int64;
 for &{ i, j, .sqr_d } in PairSet.iter(&pairs) do (
     # dbg.print (.points = points.inner, .i);
-    let a = List.at(&points, i);
-    let b = List.at(&points, j);
+    let a = ArrayList.at(&points, i);
+    let b = ArrayList.at(&points, j);
     # dbg.print ("merge", a^, b^);
     # print (
     #     "[INFO] merge "
@@ -193,19 +193,19 @@ for &{ i, j, .sqr_d } in PairSet.iter(&pairs) do (
     #     + " with sqr_d="
     #     + (to_string sqr_d)
     # );
-    if DSU.merge(List.at_mut(&mut nodes, i), List.at_mut(&mut nodes, j)) then (
+    if DSU.merge(ArrayList.at_mut(&mut nodes, i), ArrayList.at_mut(&mut nodes, j)) then (
         answer_part2 = a^.x * b^.x;
     );
 );
 let answer = if part1 then (
-    let mut visited = List.create();
+    let mut visited = ArrayList.new();
     for i in 0..n do (
-        List.push_back(&mut visited, false);
+        ArrayList.push_back(&mut visited, false);
     );
-    const sort_by = [T] (a :: &mut List.t[T], .less :: (&T, &T) -> Bool) => (
+    const sort_by = [T] (a :: &mut ArrayList.t[T], .less :: (&T, &T) -> Bool) => (
         use std.collections.Treap;
-        let mut t = Treap.create();
-        for &x in List.iter(&a^) do (
+        let mut t = Treap.new();
+        for &x in ArrayList.iter(&a^) do (
             let { left, right } = Treap.split(
                 t,
                 node => (
@@ -228,23 +228,23 @@ let answer = if part1 then (
         
         a^.inner = t;
     );
-    let mut component_sizes = List.create();
-    for node in List.iter_mut(&mut nodes) do (
+    let mut component_sizes = ArrayList.new();
+    for node in ArrayList.iter_mut(&mut nodes) do (
         let root = DSU.find_root(node);
         # dbg.print root^;
-        # dbg.print <| (List.length &visited, root^.id - 1);
-        let visited = List.at_mut(&mut visited, root^.id - 1);
+        # dbg.print <| (ArrayList.length &visited, root^.id - 1);
+        let visited = ArrayList.at_mut(&mut visited, root^.id - 1);
         if not visited^ then (
             # dbg.print (.component = root^.count);
             visited^ = true;
-            List.push_back(&mut component_sizes, root^.count);
+            ArrayList.push_back(&mut component_sizes, root^.count);
         );
     );
     
     sort_by(&mut component_sizes, .less = (&a, &b) => a > b);
     let mut answer = 1;
     for i in 0..3 do (
-        answer *= (List.at(&component_sizes, i))^;
+        answer *= (ArrayList.at(&component_sizes, i))^;
     );
     
     as_Int64(answer)

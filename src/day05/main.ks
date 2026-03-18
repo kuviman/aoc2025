@@ -12,8 +12,8 @@ const segment_set = (
     module:
     const segment = newtype { Int64, Int64 };
     const t = Treap.t[segment];
-    const create = () -> t => (
-        Treap.create()
+    const new = () -> t => (
+        Treap.new()
     );
     const split = (set :: t, x :: Int64) -> { t, t } => (
         Treap.split(
@@ -62,8 +62,8 @@ const segment_set = (
         )
     );
 );
-let mut ranges = segment_set.create();
-let mut ids = List.create();
+let mut ranges = segment_set.new();
+let mut ids = ArrayList.new();
 let mut parsing_ranges = true;
 for line in String.lines(input) do (
     if String.length(line) == 0 then (
@@ -76,13 +76,13 @@ for line in String.lines(input) do (
             ranges = segment_set.add(ranges, { start, end + 1 });
         ) else (
             let id = parse(line);
-            List.push_back(&mut ids, id);
+            ArrayList.push_back(&mut ids, id);
         );
     );
 );
 let answer = if part1 then (
     let mut answer = 0;
-    for &id in List.iter(&ids) do (
+    for &id in ArrayList.iter(&ids) do (
         if segment_set.contains(&ranges, id) then (
             answer += 1;
         );

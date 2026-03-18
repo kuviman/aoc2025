@@ -8,14 +8,14 @@ const State = Int32;
 const Machine = newtype {
     .lights :: Int32,
     .target_state :: State,
-    .buttons :: List.t[State],
-    .joltages :: List.t[Int32],
+    .buttons :: ArrayList.t[State],
+    .joltages :: ArrayList.t[Int32],
 };
 let parse_machine = s -> Machine => (
     let mut lights = 0;
     let mut target_state = 0;
-    let mut buttons = List.create();
-    let mut joltages = List.create();
+    let mut buttons = ArrayList.new();
+    let mut joltages = ArrayList.new();
     for part in String.split(s, ' ') do (
         let parens = String.at(part, 0);
         let inside = String.substring(part, 1, String.length(part) - 2);
@@ -39,10 +39,10 @@ let parse_machine = s -> Machine => (
                 );
             );
             
-            List.push_back(&mut buttons, affected_lights);
+            ArrayList.push_back(&mut buttons, affected_lights);
         ) else if parens == '{' then (
             for x in String.split(inside, ',') do (
-                List.push_back(&mut joltages, x |> parse);
+                ArrayList.push_back(&mut joltages, x |> parse);
             );
         ) else (
             panic("unexpected char")
@@ -60,16 +60,16 @@ let max = (a, b) => if a > b then a else b;
 let min = (a, b) => if a < b then a else b;
 let solve_part1 = (machine :: Machine) => (
     use std.collections.Queue;
-    let mut q = Queue.create();
-    let mut d = List.create();
+    let mut q = Queue.new();
+    let mut d = ArrayList.new();
     for _ in 0..std.op.bit_shift_left(1, machine.lights) do (
-        List.push_back(&mut d, 0);
+        ArrayList.push_back(&mut d, 0);
     );
     
     print("[INFO] starting bfs");
-    (List.at_mut(&mut d, 0))^ = 1;
+    (ArrayList.at_mut(&mut d, 0))^ = 1;
     Queue.push(&mut q, 0);
-    (List.at_mut(&mut d, machine.target_state))^ = -1;
+    (ArrayList.at_mut(&mut d, machine.target_state))^ = -1;
     Queue.push(&mut q, machine.target_state);
     let mut machine_answer = -1;
     unwindable bfs (
@@ -79,11 +79,11 @@ let solve_part1 = (machine :: Machine) => (
             dbg.print({ .after_pop = Queue.length(&q) });
             # if state == machine.target_state then break;
             # dbg.print (.q, .state);
-            let state_d = (List.at(&d, state))^;
+            let state_d = (ArrayList.at(&d, state))^;
             let dir = if state_d < 0 then -1 else +1;
-            for { i, &changes } in List.iter(&machine.buttons) |> std.iter.enumerate do (
+            for { i, &changes } in ArrayList.iter(&machine.buttons) |> std.iter.enumerate do (
                 let new_state = std.op.bit_xor(state, changes);
-                let new_state_d = List.at_mut(&mut d, new_state);
+                let new_state_d = ArrayList.at_mut(&mut d, new_state);
                 if new_state_d^ == 0 then (
                     # dbg.print (.state, .dir, .new_state, .button = i, .changes);
                     new_state_d^ = state_d + dir;
@@ -103,32 +103,32 @@ let solve_part1 = (machine :: Machine) => (
 );
 const Matrix = (
     module:
-    const t = newtype { .rows :: List.t[List.t[Int32]] };
-    const create = (n, m) -> t => (
-        let mut rows = List.create();
+    const t = newtype { .rows :: ArrayList.t[ArrayList.t[Int32]] };
+    const new = (n, m) -> t => (
+        let mut rows = ArrayList.new();
         for _ in 0..n do (
-            let mut row = List.create();
+            let mut row = ArrayList.new();
             for _ in 0..m do (
-                List.push_back(&mut row, 0);
+                ArrayList.push_back(&mut row, 0);
             );
             
-            List.push_back(&mut rows, row);
+            ArrayList.push_back(&mut rows, row);
         );
         { .rows }
     );
     const at_mut = (a :: &mut t, i :: Int32, j :: Int32) -> &mut Int32 => (
-        List.at_mut(List.at_mut(&mut a^.rows, i), j)
+        ArrayList.at_mut(ArrayList.at_mut(&mut a^.rows, i), j)
     );
     const at = (a :: &t, i, j) => (
-        (List.at(List.at(&a^.rows, i), j))^
+        (ArrayList.at(ArrayList.at(&a^.rows, i), j))^
     );
-    const row_mut = (a :: &mut t, i) -> &mut List.t[Int32] => (
-        List.at_mut(&mut a^.rows, i)
+    const row_mut = (a :: &mut t, i) -> &mut ArrayList.t[Int32] => (
+        ArrayList.at_mut(&mut a^.rows, i)
     );
     const print = (a :: &t) => (
-        for row in List.iter(&a^.rows) do (
+        for row in ArrayList.iter(&a^.rows) do (
             let mut s = "";
-            for &x in List.iter(row) do (
+            for &x in ArrayList.iter(row) do (
                 s += " " + to_string(x);
             );
             
@@ -136,8 +136,8 @@ const Matrix = (
         );
     );
     const size = (a :: &t) -> { Int32, Int32 } => {
-        List.length(&a^.rows),
-        List.length(List.at(&a^.rows, 0))
+        ArrayList.length(&a^.rows),
+        ArrayList.length(ArrayList.at(&a^.rows, 0))
     };
 );
 let swap = [T] (a :: &mut T, b :: &mut T) => (
@@ -186,8 +186,8 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
     );
     let { n, m } = Matrix.size(&a^);
     let { mut i, mut j } = { 0, 0 };
-    let mut free = List.create();
-    let mut pivot = List.create();
+    let mut free = ArrayList.new();
+    let mut pivot = ArrayList.new();
     loop (
         if i >= n or j >= m then break;
         let mut non_zero_row = -1;
@@ -198,31 +198,31 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
         );
         if non_zero_row == -1 then (
             if j + 1 < m then (
-                List.push_back(&mut free, j);
+                ArrayList.push_back(&mut free, j);
             );
             
             j += 1;
             continue;
         );
         if j + 1 < m then (
-            List.push_back(&mut pivot, { .row = i, .var = j });
+            ArrayList.push_back(&mut pivot, { .row = i, .var = j });
         );
         let row = Matrix.row_mut(a, i);
         swap(row, Matrix.row_mut(a, non_zero_row));
-        let at_row = (List.at(&row^, j))^;
+        let at_row = (ArrayList.at(&row^, j))^;
         for lower in i + 1..n do (
             let lower = Matrix.row_mut(a, lower);
-            if (List.at(&lower^, j))^ % at_row != 0 then (
+            if (ArrayList.at(&lower^, j))^ % at_row != 0 then (
                 # we can't safely divide, so we scale
                 # the whole row up to compensate
-                for x in List.iter_mut(lower) do (
+                for x in ArrayList.iter_mut(lower) do (
                     x^ *= at_row;
                 );
             );
-            let mult = (List.at(&lower^, j))^ / at_row;
+            let mult = (ArrayList.at(&lower^, j))^ / at_row;
             for k in j..m do (
-                let at_row = (List.at(&row^, k))^;
-                let at_lower = (List.at_mut(lower, k));
+                let at_row = (ArrayList.at(&row^, k))^;
+                let at_lower = (ArrayList.at_mut(lower, k));
                 at_lower^ -= at_row * mult;
             );
         );
@@ -231,7 +231,7 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
         j += 1;
     );
     for j in j..m - 1 do (
-        List.push_back(&mut free, j);
+        ArrayList.push_back(&mut free, j);
     );
     if verbose then (
         print("[INFO] after gauss");
@@ -271,17 +271,17 @@ let mut brute = (
     let mut machine_answer = 0;
     let mut n = 0;
     let mut m = 0;
-    let mut a = Matrix.create(0, 0);
-    let mut vars = List.create();
-    let mut free = List.create();
-    let mut pivot = List.create();
+    let mut a = Matrix.new(0, 0);
+    let mut vars = ArrayList.new();
+    let mut free = ArrayList.new();
+    let mut pivot = ArrayList.new();
     let mut current_answer = 0;
     let check = () => with_return (
         # print "TRY:";
-        # List.iter (
+        # ArrayList.iter (
         #     &free,
         #     &var => (
-        #         let value = (List.at (&vars, var))^;
+        #         let value = (ArrayList.at (&vars, var))^;
         #         # print (to_string var + " = " + to_string value);
         #         current_answer += value;
         #     ),
@@ -292,11 +292,11 @@ let mut brute = (
             pivot.inner,
             &{ .var, .row } => (
                 let row = Matrix.row_mut(&mut a, row);
-                let mut result = (List.at(&row^, m - 1))^;
+                let mut result = (ArrayList.at(&row^, m - 1))^;
                 for j in var + 1..m - 1 do (
-                    result -= (List.at(&vars, j))^ * (List.at(&row^, j))^;
+                    result -= (ArrayList.at(&vars, j))^ * (ArrayList.at(&row^, j))^;
                 );
-                let k = (List.at(&row^, var))^;
+                let k = (ArrayList.at(&row^, var))^;
                 if result % k != 0 then return;
                 result /= k;
                 if result < 0 then return;
@@ -304,7 +304,7 @@ let mut brute = (
                 if current_answer >= machine_answer then return;
                 # print (to_string var + " = " + to_string result);
                 (
-                    List.at_mut(&mut vars, var)
+                    ArrayList.at_mut(&mut vars, var)
                 )^ = result;
             ),
         );
@@ -320,8 +320,8 @@ let mut brute = (
         ) else (
             for x in 0..max + 1 do (
                 # print ("BRUTE " + to_string i + " = " + to_string x);
-                let free_var_idx = (List.at(&free, i))^;
-                (List.at_mut(&mut vars, free_var_idx))^ = x;
+                let free_var_idx = (ArrayList.at(&free, i))^;
+                (ArrayList.at_mut(&mut vars, free_var_idx))^ = x;
                 current_answer += x;
                 force(i - 1, .max = max - x);
                 current_answer -= x;
@@ -332,12 +332,12 @@ let mut brute = (
 let mut max_combinations = 0;
 let solve_part2 = (machine :: Machine) -> Int32 => with_return (
     # return 0;
-    let n = List.length(&machine.joltages);
-    let m = List.length(&machine.buttons) + 1;
-    let mut a = Matrix.create(n, m);
+    let n = ArrayList.length(&machine.joltages);
+    let m = ArrayList.length(&machine.buttons) + 1;
+    let mut a = Matrix.new(n, m);
     (
         let mut i = 0;
-        for &(mut button) in List.iter(&machine.buttons) do (
+        for &(mut button) in ArrayList.iter(&machine.buttons) do (
             for j in 0..n do (
                 if std.op.bit_and(button, 1) != 0 then (
                     (Matrix.at_mut(&mut a, j, i))^ = 1;
@@ -349,24 +349,24 @@ let solve_part2 = (machine :: Machine) -> Int32 => with_return (
             i += 1;
         );
         let mut i = 0;
-        for &x in List.iter(&machine.joltages) do (
+        for &x in ArrayList.iter(&machine.joltages) do (
             (Matrix.at_mut(&mut a, i, m - 1))^ = x;
             i += 1;
         );
     );
     let { .free, .pivot } = gauss_elimination(&mut a);
     let mut max_joltage = 0;
-    for &x in List.iter(&machine.joltages) do (
+    for &x in ArrayList.iter(&machine.joltages) do (
         max_joltage = max(max_joltage, x);
     );
     
     print("max_joltage = " + to_string(max_joltage));
-    let combinations = pow(max_joltage, List.length(&free));
+    let combinations = pow(max_joltage, ArrayList.length(&free));
     max_combinations = max(max_combinations, combinations);
     print("combinations(max^free) = " + to_string(combinations));
-    let mut vars = List.create();
+    let mut vars = ArrayList.new();
     for _ in 0..m - 1 do (
-        List.push_back(&mut vars, 0);
+        ArrayList.push_back(&mut vars, 0);
     );
     
     brute.machine_answer = 1000000000;
@@ -376,7 +376,7 @@ let solve_part2 = (machine :: Machine) -> Int32 => with_return (
     brute.vars = vars;
     brute.free = free;
     brute.pivot = pivot;
-    brute.force(List.length(&free) - 1, .max = max_joltage);
+    brute.force(ArrayList.length(&free) - 1, .max = max_joltage);
     
     print("answer = " + to_string(brute.machine_answer));
     brute.machine_answer
@@ -390,9 +390,9 @@ for line in String.lines(input) do (
     if String.length(line) == 0 then continue;
     let machine = parse_machine(line);
     
-    max_buttons = max(max_buttons, List.length(&machine.buttons));
-    max_joltages = max(max_joltages, List.length(&machine.joltages));
-    for &x in List.iter(&machine.joltages) do (
+    max_buttons = max(max_buttons, ArrayList.length(&machine.buttons));
+    max_joltages = max(max_joltages, ArrayList.length(&machine.joltages));
+    for &x in ArrayList.iter(&machine.joltages) do (
         max_joltage = max(max_joltage, x);
     );
     

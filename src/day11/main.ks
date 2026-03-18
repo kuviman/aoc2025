@@ -2,7 +2,7 @@
 include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
 let input = std.fs.read_file(input_path);
-use std.collections.Map;
+const Map = std.collections.OrdMap;
 let verbose = false;
 let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
 let zero = as_Int64(0);
@@ -13,13 +13,13 @@ const Graph = (
     const Vertex = [T] newtype {
         .id :: VertexId,
         .data :: T,
-        .out :: List.t[type (&mut Vertex[T])],
+        .out :: ArrayList.t[type (&mut Vertex[T])],
     };
     const t = [T] newtype {
         .vs :: Map.t[VertexId, Vertex[T]],
     };
-    const create = [T] () -> t[T] => {
-        .vs = Map.create()
+    const new = [T] () -> t[T] => {
+        .vs = Map.new()
     };
     const get_or_init_vertex = [T] (
         g :: &mut t[T],
@@ -32,7 +32,7 @@ const Graph = (
             () => {
                 .id,
                 .data = init(),
-                .out = List.create(),
+                .out = ArrayList.new(),
             },
         )
     );
@@ -46,7 +46,7 @@ const Graph = (
         for &{ .key = id, .value = v } in Map.iter(&g^.vs) do (
             let mut s = id + ": ";
             let mut first = true;
-            for &u in List.iter(&v.out) do (
+            for &u in ArrayList.iter(&v.out) do (
                 if first then (
                     first = false;
                 ) else (
@@ -72,7 +72,7 @@ const VertexData = newtype {
     .pt2 :: Pt2Data,
     .paths_to_target :: Int32,
 };
-let mut g :: Graph.t[VertexData] = Graph.create();
+let mut g :: Graph.t[VertexData] = Graph.new();
 let get_or_init_vertex = (name :: String) => (
     Graph.get_or_init_vertex(
         &mut g,
@@ -96,7 +96,7 @@ for line in String.lines(input) do (
         let u = String.trim(u);
         if String.length(u) != 0 then (
             let u = get_or_init_vertex(u);
-            List.push_back(&mut v^.out, u);
+            ArrayList.push_back(&mut v^.out, u);
         );
     );
 );
@@ -110,7 +110,7 @@ let Part1 = (
         let v_result = &mut v^.data.paths_to_target;
         if v_result^ == -1 then (
             v_result^ = 0;
-            for &u in List.iter(&v^.out) do (
+            for &u in ArrayList.iter(&v^.out) do (
                 v_result^ += dp(u);
             );
         );
@@ -147,7 +147,7 @@ let Part2 = (
             v_result^ = zero;
             let visited_dac = visited_dac or v^.id == "dac";
             let visited_fft = visited_fft or v^.id == "fft";
-            for &u in List.iter(&v^.out) do (
+            for &u in ArrayList.iter(&v^.out) do (
                 v_result^ += dp(u, visited_dac, visited_fft);
             );
         );

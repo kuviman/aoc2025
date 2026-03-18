@@ -3,27 +3,27 @@ include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
 let input = std.fs.read_file(input_path);
 use std.collections.Queue;
-let mut map = List.create();
+let mut map = ArrayList.new();
 for line in String.lines(input) do (
     if String.length(line) != 0 then (
-        let mut chars = List.create();
+        let mut chars = ArrayList.new();
         for c in String.iter(line) do (
-            List.push_back(&mut chars, c);
+            ArrayList.push_back(&mut chars, c);
         );
         
-        List.push_back(&mut map, chars);
+        ArrayList.push_back(&mut map, chars);
     );
 );
 let at_mut = (i, j) -> &mut Char => (
-    List.at_mut(List.at_mut(&mut map, i), j)
+    ArrayList.at_mut(ArrayList.at_mut(&mut map, i), j)
 );
-let n = List.length(&map);
-let m = List.length(List.at(&map, 0));
+let n = ArrayList.length(&map);
+let m = ArrayList.length(ArrayList.at(&map, 0));
 let in_bounds = (i, j) => (
     (0 <= i and i < n)
     and (0 <= j and j < m)
 );
-let mut q = Queue.create();
+let mut q = Queue.new();
 for i in 0..n do (
     for j in 0..m do (
         Queue.push(&mut q, { i, j });
