@@ -226,7 +226,11 @@ let answer = if part1 then (
             );
         );
         
-        a^.inner = t;
+        let mut i = 0;
+        for x in Treap.into_iter(t) do (
+            ArrayList.at_mut(a, i)^ = x;
+            i += 1;
+        );
     );
     let mut component_sizes = ArrayList.new();
     for node in ArrayList.iter_mut(&mut nodes) do (

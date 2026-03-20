@@ -239,7 +239,7 @@ let gauss_elimination = (a :: &mut Matrix.t) => (
         print("====");
     );
     
-    print("free vars = " + std.collections.Treap.to_string(&free.inner, &x => to_string(x)));
+    print("free vars = " + ArrayList.to_string(&free, &x => to_string(x)));
     {
         .free,
         .pivot,
@@ -288,25 +288,23 @@ let mut brute = (
         # );
         # 300 * 300 * 300 * 10 * 10 * 100000
         # print "pivot:";
-        Treap.iter_rev(
-            pivot.inner,
-            &{ .var, .row } => (
-                let row = Matrix.row_mut(&mut a, row);
-                let mut result = (ArrayList.at(&row^, m - 1))^;
-                for j in var + 1..m - 1 do (
-                    result -= (ArrayList.at(&vars, j))^ * (ArrayList.at(&row^, j))^;
-                );
-                let k = (ArrayList.at(&row^, var))^;
-                if result % k != 0 then return;
-                result /= k;
-                if result < 0 then return;
-                current_answer += result;
-                if current_answer >= machine_answer then return;
-                # print (to_string var + " = " + to_string result);
-                (
-                    ArrayList.at_mut(&mut vars, var)
-                )^ = result;
-            ),
+        for i in (0..ArrayList.length(&pivot)).rev() do (
+            let &{ .var, .row } = ArrayList.at(&pivot, i);
+            let row = Matrix.row_mut(&mut a, row);
+            let mut result = (ArrayList.at(&row^, m - 1))^;
+            for j in var + 1..m - 1 do (
+                result -= (ArrayList.at(&vars, j))^ * (ArrayList.at(&row^, j))^;
+            );
+            let k = (ArrayList.at(&row^, var))^;
+            if result % k != 0 then return;
+            result /= k;
+            if result < 0 then return;
+            current_answer += result;
+            if current_answer >= machine_answer then return;
+            # print (to_string var + " = " + to_string result);
+            (
+                ArrayList.at_mut(&mut vars, var)
+            )^ = result;
         );
         
         # print ("current = " + to_string current_answer);

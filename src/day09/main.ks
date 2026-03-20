@@ -145,8 +145,8 @@ let answer = if part1 then (
     );
     if verbose then (
         print(
-            Treap.to_string(
-                &vs.inner,
+            ArrayList.to_string(
+                &vs,
                 &{ .x, .y } => (
                     to_string(x) + " " + to_string(y)
                 ),

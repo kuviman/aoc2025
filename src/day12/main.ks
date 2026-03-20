@@ -63,7 +63,7 @@ let solve = (.width :: Int32, .height :: Int32, .amounts :: ArrayList.t[Int32]) 
         + "x"
         + to_string(height)
         + ": "
-        + std.collections.Treap.to_string(&amounts.inner, &x => to_string(x))
+        + ArrayList.to_string(&amounts, &x => to_string(x))
     );
     
     print("dumb area = " + to_string(dumb_area));
@@ -87,7 +87,7 @@ let new_shape = () -> Shape => { .rows = ArrayList.new() };
 let mut current_shape :: Shape = new_shape();
 for line in String.lines(input) do (
     if String.length(line) == 0 then continue;
-    if String.index_of(':', line) == -1 then (
+    if line |> String.index_of(':') == -1 then (
         ArrayList.push_back(&mut current_shape.rows, line);
     ) else (
         let { before_colon, after_colon } = String.split_once(line, ':');
