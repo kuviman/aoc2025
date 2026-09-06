@@ -32,8 +32,8 @@ let one = as_Int64(1);
 const Zero = [Self] newtype {
     .zero :: Self,
 };
-impl Int32 as Zero = { .zero = 0 };
-impl Int64 as Zero = { .zero = as_Int64(0) };
+@eval (impl Int32 as Zero = { .zero = 0 });
+@eval (impl Int64 as Zero = { .zero = 0 });
 const abs = [T] (x :: T) -> T => (
     let zero = (T as Zero).zero;
     if x < zero then (
