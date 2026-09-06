@@ -6,15 +6,35 @@ const Problem = newtype (
     | :Day(Int32)
     | :liquidcake1
 );
+
+impl Problem as std.cmp.Ord = {
+    .compare = (a, b) => match { a, b } with (
+        | { :Day a, :Day b } => std.cmp.default_compare(a, b)
+        | { :Day _, :liquidcake1 } => :Less
+        | { :liquidcake1, :Day _ } => :Greater
+        | { :liquidcake1, :liquidcake1 } => :Equal
+    ),
+};
+
+const Target = newtype (
+    | :Interpreter
+    | :JavaScript
+    | :C
+);
+
 let mut only :: Option.t[Problem] = :None;
 let mut only_example = false;
-let mut with_javascript = true;
+let mut target :: Target = :JavaScript;
 for i in 1..std.sys.argc() do (
     let arg = std.sys.argv_at(i);
     if arg == "--only-example" then (
         only_example = true;
-    ) else if arg == "--no-js" then (
-        with_javascript = false;
+    ) else if arg == "--target=js" then (
+        target = :JavaScript;
+    ) else if arg == "--target=interpreter" then (
+        target = :Interpreter;
+    ) else if arg == "--target=c" then (
+        target = :C;
     ) else if arg == "liquidcake1" then (
         only = :Some(:liquidcake1);
     ) else (
@@ -45,8 +65,12 @@ let test = (problem :: Problem) => with_return (
         if problem == :Day(11) and part == 2 and file == "example.txt" then (
             file = "example.part2.txt";
         );
-        let with_javascript = if with_javascript then "--target javascript " else "";
-        let command = "kast run " + with_javascript + path + " --part" + to_string(part) + " " + file;
+        let target_args = match target with (
+            | :Interpreter => ""
+            | :JavaScript => "--target javascript"
+            | :C => "--target c"
+        );
+        let command = "kast run " + target_args + " " + path + " --part" + to_string(part) + " " + file;
         print("executing " + command);
         let exit_code = std.sys.exec(command);
         if exit_code != 0 then (
