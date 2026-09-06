@@ -105,7 +105,7 @@ for i in 0..n do (
         );
     );
 );
-const DSU = (
+let DSU = (
     module:
     const root = newtype {
         .id :: Int32,
