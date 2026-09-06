@@ -140,7 +140,7 @@ const Matrix = (
         ArrayList.length(ArrayList.at(&a^.rows, 0))
     };
 );
-let swap = [T] (a :: &mut T, b :: &mut T) => (
+const swap = [T] (a :: &mut T, b :: &mut T) => (
     { a^, b^ } = { b^, a^ };
 );
 
