@@ -259,9 +259,9 @@ const Treap = (
         match a with (
             | :Empty => ()
             | :Node (node) => (
-                iter_rev(node.right, f);
+                iter_rev(node.right^, f);
                 f(&node.value);
-                iter_rev(node.left, f);
+                iter_rev(node.left^, f);
             )
         )
     )
@@ -289,7 +289,7 @@ let mut brute = (
         # 300 * 300 * 300 * 10 * 10 * 100000
         # print "pivot:";
         for i in (0..ArrayList.length(&pivot)).rev() do (
-            let &{ .var, .row } = ArrayList.at(&pivot, i);
+            let (&{ .var, .row }) = ArrayList.at(&pivot, i);
             let row = Matrix.row_mut(&mut a, row);
             let mut result = (ArrayList.at(&row^, m - 1))^;
             for j in var + 1..m - 1 do (

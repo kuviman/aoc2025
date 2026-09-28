@@ -137,8 +137,7 @@ let DSU = (
     );
     const find_root = (v :: &mut node) -> &mut root => (
         match (find_root_node(v))^ with (
-            # TODO ref mut
-            | :Root (mut root) => &mut root.data
+            | :Root ref mut root => &mut root^.data
             | :NonRoot (_) => panic("bug")
         )
     );
