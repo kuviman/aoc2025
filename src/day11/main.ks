@@ -16,7 +16,7 @@ const Graph = (
         .out :: ArrayList.t[type (&mut Vertex[T])],
     };
     const t = [T] newtype {
-        .vs :: Map.t[VertexId, Vertex[T]],
+        .vs :: Map.t[VertexId, Box[Vertex[T]]],
     };
     const new = [T] () -> t[T] => {
         .vs = Map.new()
@@ -29,28 +29,27 @@ const Graph = (
         Map.get_or_init(
             &mut g^.vs,
             id,
-            () => {
+            () => Box_new({
                 .id,
                 .data = init(),
                 .out = ArrayList.new(),
-            },
-        )
+            }),
+        )^
     );
     const get_mut = [T] (g :: &mut t[T], id :: VertexId) -> &mut Vertex[T] => (
         get_or_init_vertex(g, id, () => panic("vertex not found"))
     );
     const get = [T] (g :: &t[T], id :: VertexId) -> &Vertex[T] => (
-        Map.get(&g^.vs, id) |> Option.unwrap
+        &(Map.get(&g^.vs, id) |> Option.unwrap)^^
     );
     const print = [T] (g :: &t[T]) => (
         for &{ .key = id, .value = v } in Map.iter(&g^.vs) do (
             let mut s = id + ": ";
             let mut first = true;
-            for &u in ArrayList.iter(&v.out) do (
+            for &u in ArrayList.iter(&v^.out) do (
                 if first then (
                     first = false;
                 ) else (
-                    
                     s += ", "
                 );
                 
@@ -91,11 +90,25 @@ let get_or_init_vertex = (name :: String) => (
 for line in String.lines(input) do (
     if String.length(line) == 0 then continue;
     let { v, out } = String.split_once(line, ':');
+    let expected_name = v;
+    # print("reading vertex: " + v);
     let v = get_or_init_vertex(v);
+    if v^.id != expected_name then (
+        panic("??? expected " + expected_name + ", got " + v^.id);
+    );
+    # print("start v^.id = " + v^.id);
     for u in String.split(out, ' ') do (
+        # print("inside loop v^.id = " + v^.id);
         let u = String.trim(u);
         if String.length(u) != 0 then (
+            # print("inside if v^.id = " + v^.id);
+            if v^.id != expected_name then (
+                panic("??? expected " + expected_name + ", got " + v^.id);
+            );
+            # print("adding edge from " + v^.id + " (expected name = " + expected_name + ") to " + u);
+            print("before u v^.id = " + v^.id);
             let u = get_or_init_vertex(u);
+            print("after u v^.id = " + v^.id);
             ArrayList.push_back(&mut v^.out, u);
         );
     );

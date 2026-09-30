@@ -38,12 +38,12 @@ const segment_set = (
     const contains = (set :: &t, point :: Int64) -> Bool => (
         match set^ with (
             | :Empty => false
-            | :Node (node) => (
-                let { start, end } = node.value;
+            | :Node ref node => (
+                let { start, end } = node^.value;
                 if point < start then (
-                    contains(&node.left, point)
+                    contains(&node^.left^, point)
                 ) else if point >= end then (
-                    contains(&node.right, point)
+                    contains(&node^.right^, point)
                 ) else (
                     true
                 )
@@ -53,11 +53,11 @@ const segment_set = (
     const total_length = (set :: &t) -> Int64 => (
         match set^ with (
             | :Empty => 0
-            | :Node (node) => (
-                let { start, end } = node.value;
+            | :Node ref node => (
+                let { start, end } = node^.value;
                 (end - start)
-                + total_length(&node.left)
-                + total_length(&node.right)
+                + total_length(&node^.left^)
+                + total_length(&node^.right^)
             )
         )
     );
