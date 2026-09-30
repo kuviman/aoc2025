@@ -16,25 +16,12 @@ impl Problem as std.cmp.Ord = {
     ),
 };
 
-const Target = newtype (
-    | :Interpreter
-    | :JavaScript
-    | :C
-);
-
 let mut only :: Option.t[Problem] = :None;
 let mut only_example = false;
-let mut target :: Target = :JavaScript;
 for i in 1..std.sys.argc() do (
     let arg = std.sys.argv_at(i);
     if arg == "--only-example" then (
         only_example = true;
-    ) else if arg == "--target=js" then (
-        target = :JavaScript;
-    ) else if arg == "--target=interpreter" then (
-        target = :Interpreter;
-    ) else if arg == "--target=c" then (
-        target = :C;
     ) else if arg == "liquidcake1" then (
         only = :Some(:liquidcake1);
     ) else (
@@ -65,12 +52,8 @@ let test = (problem :: Problem) => with_return (
         if problem == :Day(11) and part == 2 and file == "example.txt" then (
             file = "example.part2.txt";
         );
-        let target_args = match target with (
-            | :Interpreter => ""
-            | :JavaScript => "--target javascript"
-            | :C => "--target c"
-        );
-        let command = "kast run " + target_args + " " + path + " --part" + to_string(part) + " " + file;
+        let extra_args = std.sys.get_env("KASTC_ARGS") |> Option.unwrap_or("");
+        let command = "kast run " + extra_args + " " + path + " --part" + to_string(part) + " " + file;
         print("executing " + command);
         let exit_code = std.sys.exec(command);
         if exit_code != 0 then (
