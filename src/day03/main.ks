@@ -6,7 +6,7 @@ use std.collections.Queue;
 
 @syntax "as_int64" 62 @wrap never = value " " "as_int64";
 impl syntax (value as_int64) = `(
-    parse(to_string($value))
+    parse(&to_string($value) |> as_str)
 );
 let k = if part1 then 2 else 12;
 
@@ -14,16 +14,16 @@ let k = if part1 then 2 else 12;
 # ArrayList |> map (x => if x < 0 then return :Error)
 # );
 let mut answer :: Int64 = 0;
-for line in String.lines(input) do (
+for line in String.lines(&input |> as_str) do (
     let n = String.length(line);
     if n == 0 then continue;
     
     dbg.print(line);
     let mut line_answer :: Int64 = 0;
+    let mut positions_by_digit = ArrayList.new[Queue.t[Int32]]();
     let data = (
         let mut current_start = 0;
         let mut current_end = 0;
-        let mut positions_by_digit = ArrayList.new[Queue.t[Int32]]();
         for _ in 0..10 do (
             ArrayList.push_back(
                 &mut positions_by_digit,
