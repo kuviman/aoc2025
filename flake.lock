@@ -79,11 +79,11 @@
         "opam-repository": "opam-repository"
       },
       "locked": {
-        "lastModified": 1774041523,
-        "narHash": "sha256-q6cJ/lOQxwf8+QewImV+YM0RJaA6IcO78A1QpKGo8TI=",
+        "lastModified": 1791130088,
+        "narHash": "sha256-frNdFGIuLgadnC8902l4FlmFmQt2fc5NDhYZON8LUXA=",
         "owner": "kast-lang",
         "repo": "kast",
-        "rev": "0a481dde03c9a95b05334c082cfc2a248bc86833",
+        "rev": "e8ece49f5ad07e721df020ca6e0fa0d6bad42cad",
         "type": "github"
       },
       "original": {
@@ -141,11 +141,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1769170682,
-        "narHash": "sha256-oMmN1lVQU0F0W2k6OI3bgdzp2YOHWYUAw79qzDSjenU=",
+        "lastModified": 1791048980,
+        "narHash": "sha256-KgItSKML8Xvte0B7/uGnBDsYzSnnKHcOaiUbgWBXLXw=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c5296fdd05cfa2c187990dd909864da9658df755",
+        "rev": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
         "type": "github"
       },
       "original": {

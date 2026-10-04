@@ -13,7 +13,8 @@
         overlays = [ ];
         pkgs = import inputs.nixpkgs { inherit system overlays; };
         kast = inputs.kast.packages.${system}.default;
-      in with pkgs; {
+      in
+      with pkgs; {
         devShells.default = mkShell {
           packages = [
             (pkgs.writeShellScriptBin "kast" ''
@@ -21,9 +22,13 @@
                 rlwrap ${kast}/bin/kast "$@"
             '')
             rlwrap
-            nixfmt-classic
+            nixfmt
             nodejs
+            libbacktrace
+            libunwind
+            clang
           ];
+          CFLAGS = "-lbacktrace -lunwind";
         };
       });
 }

@@ -38,7 +38,7 @@ let read_input = () -> Input => (
     let input = std.fs.read_file(input_path);
     let mut result = ArrayList.new();
     let mut line_idx :: Int32 = 0;
-    for line in String.lines(input) do (
+    for line in String.lines(&input |> as_str) do (
         if line == "" then continue;
         std.dbg.print(line_idx);
         line_idx += 1;

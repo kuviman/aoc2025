@@ -1,5 +1,5 @@
 #!/usr/bin/env kast
-use std.prelude.*;
+use std.StringBuilder;
 std.sys.chdir(std.path.dirname(__FILE__));
 
 const Problem = newtype (
@@ -8,8 +8,8 @@ const Problem = newtype (
 );
 
 impl Problem as std.cmp.Ord = {
-    .compare = (a, b) => match { a, b } with (
-        | { :Day a, :Day b } => std.cmp.default_compare(a, b)
+    .compare = (&a, &b) => match { a, b } with (
+        | { :Day ref a, :Day ref b } => std.cmp.default_compare(a, b)
         | { :Day _, :liquidcake1 } => :Less
         | { :liquidcake1, :Day _ } => :Greater
         | { :liquidcake1, :liquidcake1 } => :Equal
@@ -34,17 +34,18 @@ let test = (problem :: Problem) => with_return (
     );
     let name = match problem with (
         | :Day(day) => (
-            let mut name = "day";
+            let mut name = StringBuilder.new();
+            &mut name |> StringBuilder.add_str("day");
             if day < 10 then (
-                name += "0";
+                &mut name |> StringBuilder.add_str("0");
             );
-            name += to_string(day);
-            name
+            &mut name |> StringBuilder.add_String(to_string(day));
+            name |> StringBuilder.into_string
         )
-        | :liquidcake1 => "liquidcake1"
+        | :liquidcake1 => String.from_str("liquidcake1")
     );
-    print("Testing " + name);
-    let path = "src/" + name + "/main.ks";
+    println!("Testing \(name)");
+    let path = format!("src/\(name)/main.ks");
     let test = (part :: Int32, mut file) => with_return (
         if problem == :Day(12) then (
             if not (part == 1 and file == "input.txt") then return;
@@ -52,17 +53,13 @@ let test = (problem :: Problem) => with_return (
         if problem == :Day(11) and part == 2 and file == "example.txt" then (
             file = "example.part2.txt";
         );
-        let extra_args = std.sys.get_env("KASTC_ARGS") |> Option.unwrap_or("");
-        let command = "kast run " + extra_args + " " + path + " --part" + to_string(part) + " " + file;
-        print("executing " + command);
-        let exit_code = std.sys.exec(command);
+        let extra_args = std.sys.get_env("KASTC_ARGS")
+            |> Option.unwrap_or_else(() => String.from_str(""));
+        let command = format!("kast run \(extra_args) \(path) --part\(part) \(file)");
+        println!("executing \(command)");
+        let exit_code = std.sys.exec(&command |> as_str);
         if exit_code != 0 then (
-            print(
-                command
-                + " failed with exit code = "
-                + to_string(exit_code)
-            );
-            
+            println!("\(command) failed with exit_code \(exit_code)");
             std.sys.exit(-1);
         );
     );
