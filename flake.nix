@@ -28,7 +28,7 @@
             libunwind
             clang
           ];
-          CFLAGS = "-lbacktrace -lunwind";
+          CFLAGS = "-lbacktrace -lunwind -g -fsanitize=undefined,address,leak";
         };
       });
 }
