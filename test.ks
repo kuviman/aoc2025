@@ -18,9 +18,17 @@ impl Problem as std.cmp.Ord = {
 
 let mut only :: Option.t[Problem] = :None;
 let mut only_example = false;
+let mut only_input = false;
+let mut only_part :: Option.t[Int32] = :None;
 for i in 1..std.sys.argc() do (
     let arg = std.sys.argv_at(i);
-    if arg == "--only-example" then (
+    if arg == "--part1" then (
+        only_part = :Some 1;
+    ) else if arg == "--part2" then (
+        only_part = :Some 2;
+    ) else if arg == "--only-input" then (
+        only_input = true;
+    ) else if arg == "--only-example" then (
         only_example = true;
     ) else if arg == "liquidcake1" then (
         only = :Some(:liquidcake1);
@@ -47,6 +55,11 @@ let test = (problem :: Problem) => with_return (
     println!("Testing \(name)");
     let path = format!("src/\(name)/main.ks");
     let test = (part :: Int32, mut file) => with_return (
+        if only_part is :Some only_part then (
+            if part != only_part then (
+                return;
+            );
+        );
         if problem == :Day(12) then (
             if not (part == 1 and file == "input.txt") then return;
         );
@@ -64,8 +77,10 @@ let test = (problem :: Problem) => with_return (
         );
     );
     
-    test(1, "example.txt");
-    test(2, "example.txt");
+    if not only_input then (
+        test(1, "example.txt");
+        test(2, "example.txt");
+    );
     if not only_example then (
         test(1, "input.txt");
         test(2, "input.txt");

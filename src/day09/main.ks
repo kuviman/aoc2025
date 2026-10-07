@@ -1,20 +1,21 @@
 #!/usr/bin/env kast
+use std.StringBuilder;
 include "../common.ks";
 std.sys.chdir(std.path.dirname(__FILE__));
 let input = std.fs.read_file(input_path);
 let verbose = false;
 if std.sys.argc() >= 4 and std.sys.argv_at(1) == "--svg" then (
-    print("<svg viewBox=\"0 0 100000 100000\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"");
-    print(input);
-    print("\" fill=\"black\" stroke=\"white\" stroke-width=\"100\"/></svg>");
+    println!("<svg viewBox=\"0 0 100000 100000\" xmlns=\"http://www.w3.org/2000/svg\"><polygon points=\"");
+    println!("\(input)");
+    println!("\" fill=\"black\" stroke=\"white\" stroke-width=\"100\"/></svg>");
 );
-let as_Int64 :: Int32 -> Int64 = x => (x |> to_string |> parse);
+let as_Int64 :: Int32 -> Int64 = x => (&(x |> to_string) |> as_str |> parse);
 const Coords = newtype {
     .x :: Int64,
     .y :: Int64,
 };
 let mut tiles :: ArrayList.t[Coords] = ArrayList.new();
-for line in String.lines(input) do (
+for line in String.lines(&input |> as_str) do (
     if String.length(line) != 0 then (
         let { x, y } = String.split_once(line, ',');
         let x = x |> parse;
@@ -24,7 +25,7 @@ for line in String.lines(input) do (
     );
 );
 
-print("[INFO] coords read");
+println!("[INFO] coords read");
 
 # TODO make lang easier to use Int64 literals
 let zero = as_Int64(0);
@@ -116,12 +117,7 @@ let answer = if part1 then (
         t^ = Treap.join(less, Treap.join(Treap.singleton(x), greater));
     );
     for { i, &{ .x, .y } } in ArrayList.iter(&tiles) |> std.iter.enumerate do (
-        print(
-            "[INFO] compressing coords "
-            + (to_string(i))
-            + "/"
-            + (to_string <| ArrayList.length(&tiles))
-        );
+        println!("[INFO] compressing coords \(i)/\(ArrayList.length(&tiles))");
         
         add(&mut xs, x - one);
         add(&mut xs, x);
@@ -131,30 +127,15 @@ let answer = if part1 then (
         add(&mut ys, y + one);
     );
     
-    print(
-        "[INFO] coords are compressed xs="
-        + (to_string <| Treap.length(&xs))
-        + ", ys="
-        + (to_string <| Treap.length(&ys))
-    );
+    # println!("[INFO] coords are compressed xs=\(Treap.length(&xs)), ys=\(Treap.length(&ys))");
     let mut vs = ArrayList.new();
     for &{ .x, .y } in ArrayList.iter(&tiles) do (
         let x = idx_of(&xs, x);
         let y = idx_of(&ys, y);
         ArrayList.push_back(&mut vs, { .x, .y });
     );
-    if verbose then (
-        print(
-            ArrayList.to_string(
-                &vs,
-                &{ .x, .y } => (
-                    to_string(x) + " " + to_string(y)
-                ),
-            )
-        );
-    );
     
-    print("[INFO] calculated compressed polygon");
+    println!("[INFO] calculated compressed polygon");
     const Map = (
         module:
         use std.collections.Treap;
@@ -166,12 +147,7 @@ let answer = if part1 then (
         let new = (n, m) -> t => (
             let mut repr = Treap.new();
             for i in 0..n do (
-                print(
-                    "[INFO] progress "
-                    + (to_string(i))
-                    + "/"
-                    + (to_string(n))
-                );
+                println!("[INFO] progress \(i)/\(n)");
                 let mut row = Treap.new();
                 for i in 0..m do (
                     row = Treap.join(row, Treap.singleton(0));
@@ -193,18 +169,13 @@ let answer = if part1 then (
         );
     );
     
-    print("[INFO] creating empty map");
+    println!("[INFO] creating empty map");
     let mut map = Map.new(Treap.length(&xs), Treap.length(&ys));
-    print("[INFO] newd empty map");
+    println!("[INFO] newd empty map");
     
-    print("[INFO] drawing edges");
+    println!("[INFO] drawing edges");
     for i in 0..ArrayList.length(&vs) do (
-        print(
-            "[INFO] progress "
-            + (to_string(i))
-            + "/"
-            + (to_string <| ArrayList.length(&vs))
-        );
+        # println!("[INFO] progress \(i)/\(ArrayList.length(&vs))");
         let mut next = i + 1;
         if next == ArrayList.length(&vs) then (
             next = 0;
@@ -238,16 +209,11 @@ let answer = if part1 then (
         );
     );
     
-    print("[INFO] done drawing edges");
+    println!("[INFO] done drawing edges");
     
-    print("[INFO] filling the map");
+    println!("[INFO] filling the map");
     for i in 0..map.n do (
-        print(
-            "[INFO] progress "
-            + (to_string(i))
-            + "/"
-            + (to_string(map.n))
-        );
+        # println!("[INFO] progress \(i)/\(map.n)");
         for j in 1..map.m do (
             let cell = Map.at_mut(&mut map, i, j);
             cell^ += Map.at(&map, i, j - 1);
@@ -258,19 +224,18 @@ let answer = if part1 then (
         (Map.at_mut(&mut map, x, y))^ = ACTUAL_CORNER;
     );
     
-    print("[INFO] done filling the map");
+    println!("[INFO] done filling the map");
     if input_path == "example.txt" then (
         for y in 0..map.m do (
-            let mut s = "";
+            let mut s = StringBuilder.new();
             for x in 0..map.n do 
             # s += to_string x;
             (
                 let x = Map.at(&map, x, y);
                 let c = if x == 0 then " " else if x == 1 then "X" else "#";
-                s += c;
+                &mut s |> StringBuilder.add_str(c);
             );
-            
-            print(s);
+            # println!("\(s)");
         );
     );
     let mut answer = as_Int64(0);
@@ -290,17 +255,14 @@ let answer = if part1 then (
             a = t;
         );
         
-        print(
-            "[INFO] trying "
-            + (
-                let b = uncompress(b);
-                (to_string(b.x)) + "," + (to_string(b.y))
-            )
+        (
+            let b = uncompress(b);
+            println!("[INFO] trying \(b.x),\(b.y)");
         );
         let try_direction = dir => (
             let mut a = { .x = a.x, .y = a.y };
             let mut b = { .x = b.x, .y = b.y };
-            print("[INFO] trying direction " + to_string(dir));
+            println!("[INFO] trying direction \(dir)");
             let mut max_y = b.y;
             while Map.at(&map, b.x, max_y) != 0 do (
                 max_y += dir;
@@ -309,8 +271,7 @@ let answer = if part1 then (
             max_y -= dir;
             unwindable block (
                 loop (
-                    
-                    print("[INFO] x=" + (to_string(a.x)) + "/" + (to_string(b.x)));
+                    # println!("[INFO] x=\(a.x)/\(b.x)");
                     if Map.at(&map, a.x, a.y) == ACTUAL_CORNER then (
                         let a = uncompress(a);
                         let b = uncompress(b);
